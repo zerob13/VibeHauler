@@ -42,7 +42,7 @@ flowchart LR
 2. Config and path discovery.
 3. TUI startup shell.
 4. Adapter registry with empty adapters.
-5. JSONL/Markdown parsers for Claude, Codex, Gemini, Aider.
+5. JSONL parsers for Claude, Codex, Gemini; protective adapters for Cursor, Cherry Studio, DeepChat.
 6. App selection and safe cleanup screens.
 7. Plan builder and manifest contracts.
 8. Cleaner backup, trash, manifest, and TUI restore guidance.

@@ -158,6 +158,14 @@ pub fn existing_child(root: &Path, child: &str) -> Option<PathBuf> {
     path.exists().then_some(path)
 }
 
+pub fn existing_descendant(root: &Path, parts: &[&str]) -> Option<PathBuf> {
+    let mut path = root.to_path_buf();
+    for part in parts {
+        path.push(part);
+    }
+    path.exists().then_some(path)
+}
+
 pub fn find_files(root: &Path, names: &[&str], extensions: &[&str]) -> Vec<PathBuf> {
     WalkDir::new(root)
         .follow_links(false)

@@ -24,19 +24,17 @@ fixtures/
 │   ├── .claude/
 │   ├── .codex/
 │   ├── .gemini/
+│   ├── Library/Application Support/Cursor/User/
 │   └── Library/Application Support/CherryStudio/
 ├── linux-home/
 │   ├── .config/Cursor/User/
-│   ├── .local/share/opencode/
-│   └── .local/share/goose/
+│   ├── .config/CherryStudio/
+│   └── .config/DeepChat/
 ├── windows-home/
 │   ├── AppData/Roaming/Cursor/User/
 │   ├── AppData/Roaming/DeepChat/
+│   ├── AppData/Roaming/CherryStudio/
 │   └── .codex/
-└── repos/
-    └── aider-project/
-        ├── .aider.chat.history.md
-        └── .aider.input.history
 ```
 
 ## Test Categories
@@ -50,7 +48,7 @@ fixtures/
 | Cross-platform | Windows paths, WSL, XDG, symlinks |
 | Regression | real anonymized schema samples |
 
-## Minimum v0.1 Test Matrix
+## Current Test Matrix
 
 | Area | Required Tests |
 |---|---|
@@ -59,7 +57,7 @@ fixtures/
 | Claude | JSONL parse with unknown event |
 | Codex | history and sessions path parse |
 | Gemini | tmp chats parse |
-| Aider | Markdown segmentation |
+| Cursor/Cherry/DeepChat | protective state plus DeepChat read-only `agent.db` sessions |
 | Cleaner | no mutation before confirmation, backup hash, manifest |
 | Redaction | API keys, bearer tokens, URL credentials |
 
@@ -67,10 +65,10 @@ Post-v0.1 fixture areas:
 
 | Area | First Stage |
 |---|---|
-| Cursor state.vscdb readonly schema report | v0.2 |
+| Cursor state.vscdb key-family report | next |
 | Goose sessions.db readonly report | v0.2 |
-| Cherry LocalStorage/backup JSON samples | v0.3 |
-| DeepChat/Alma SQLite schema reports | v0.3 |
+| Cherry LocalStorage/backup JSON parsing | next |
+| DeepChat legacy `chat.db` fallback / Alma SQLite session reports | next |
 
 ## Golden Files
 

@@ -11,7 +11,7 @@ Parsers understand file and database formats. They should be reusable across ada
 | Parser | Targets |
 |---|---|
 | JSONL session parser | Claude, Codex, Gemini |
-| Markdown history parser | Aider |
+| Markdown history parser | legacy Aider regression fixture |
 | SQLite introspector | v0.2+ protective reports for Cursor, Goose, DeepChat, Alma |
 | Chromium localStorage LevelDB parser | v0.3+ protective reports for Cherry and Electron apps |
 | IndexedDB candidate scanner | v0.3+ report-only research path for Cherry Dexie stores |
@@ -52,9 +52,9 @@ Requirements:
 
 Requirements:
 
-- segment Aider history by headings and role markers;
+- segment legacy Markdown history by headings and role markers;
 - infer repo root from file location;
-- support `.aider.chat.history.md`, `.aider.input.history`, and `.aider.llm.history`;
+- keep `.aider.chat.history.md`, `.aider.input.history`, and `.aider.llm.history` parsing as a non-registered regression fixture;
 - treat input history as sensitive Yellow, not cache.
 
 ## SQLite Introspector

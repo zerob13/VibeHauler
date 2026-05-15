@@ -10,16 +10,18 @@ VibeHauler opens a terminal UI that finds local AI agent data, explains what is 
 
 ## Status
 
-v0.1 is implemented for the MVP client set:
+Current `main` supports the original CLI clients plus protective desktop-client cleanup:
 
-| Client | Detection | Inventory | Sessions | Safe cleanup |
-|---|---:|---:|---:|---:|
-| Claude Code | yes | yes | JSONL | logs/cache/tmp |
-| Codex | yes | yes | JSONL/history | logs/cache/tmp |
-| Gemini CLI | yes | yes | JSONL chats | logs/cache/tmp |
-| Aider | repo-local | yes | Markdown/history | session review |
+| Client | Tier | Detection | Inventory | Sessions | Safe cleanup |
+|---|---|---:|---:|---:|---:|
+| Claude Code | Full | yes | yes | JSONL | logs/cache/tmp |
+| Codex | Full | yes | yes | JSONL/history | logs/cache/tmp |
+| Gemini CLI | Full | yes | yes | JSONL chats | logs/cache/tmp |
+| Cursor | Protective | yes | report-only DB state | none yet | cache/log only |
+| Cherry Studio | Protective | yes | report-only LevelDB/IndexedDB/SQLite state | none yet | trace/cache/log only |
+| DeepChat | Protective | yes | read-only `agent.db` sessions | report-only | cache/log/tmp only |
 
-Post-v0.1 clients may appear in docs or package names, but the supported cleanup surface is the four clients above.
+Protective adapters never mutate app databases or opaque browser stores. Aider support was removed from the default registry; the old Markdown parser remains as a regression fixture only.
 
 ## Install
 
@@ -178,9 +180,11 @@ cargo test --workspace --all-features
 
 Covered areas include:
 
-- adapter detect/inventory/sessions for Claude, Codex, Gemini, and Aider;
+- adapter detect/inventory/sessions for Claude, Codex, and Gemini;
+- protective detect/inventory/no-session behavior for Cursor and Cherry Studio;
+- read-only DeepChat `agent.db` session parsing;
 - JSONL known and unknown events;
-- Aider Markdown history parsing;
+- legacy Markdown history parsing;
 - RiskLevel assignment;
 - CleanPlan generation and serialization;
 - CleanManifest generation;

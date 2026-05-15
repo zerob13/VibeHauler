@@ -51,10 +51,10 @@ pub struct AdapterRegistry {
 
 ## Adapter Tiers
 
-| Tier | Meaning | v0.1 Requirement |
+| Tier | Meaning | Current Support |
 |---|---|---|
-| Full | detection, inventory, sessions, Green cleanup | Claude, Codex, Gemini, Aider |
-| Protective | detection, inventory, partial sessions/report, Green-only cleanup | not in v0.1; starts with Cursor/Goose in v0.2 |
+| Full | detection, inventory, sessions, Green cleanup | Claude, Codex, Gemini |
+| Protective | detection, inventory, report-only protected state, Green-only cleanup | Cursor, Cherry Studio, DeepChat |
 | Sniffer | detection and generic file/session hints | not in v0.1; starts with OpenCode in v0.2 |
 
 ## Per-adapter Files
@@ -68,15 +68,10 @@ crates/vibe-hauler-adapters/src/
 ├── claude.rs
 ├── codex.rs
 ├── gemini.rs
-├── aider.rs
-├── opencode.rs          # v0.2
-├── cursor.rs            # v0.2
-├── cherry/
-│   ├── mod.rs
-│   ├── backup_json.rs
-│   ├── local_storage.rs
-│   └── indexeddb.rs
+├── cursor.rs
+├── cherry.rs
 ├── deepchat.rs
+├── opencode.rs          # v0.2
 ├── goose.rs             # v0.2
 ├── alma.rs
 └── factory_droid.rs

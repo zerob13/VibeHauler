@@ -581,8 +581,8 @@ Parser 优先级：
 
 | 文件 | 格式 | 策略 |
 |---|---|---|
-| `app_db/chat.db` | SQLite | 只读解析 conversations/messages，默认保护 |
-| `app_db/agent.db` | SQLite | 只读解析，默认保护 |
+| `app_db/agent.db` | SQLite | 当前主库，只读解析 new_sessions/deepchat_messages，默认保护 |
+| `app_db/chat.db` | SQLite | legacy conversations/messages fallback，默认保护 |
 | app settings / Electron Store | JSON | Provider/config 保护 |
 | DuckDB knowledge bases | DuckDB | 默认保护 |
 | cache / logs | files | Green 清理 |

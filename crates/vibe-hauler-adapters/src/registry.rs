@@ -2,8 +2,8 @@ use vibe_hauler_core::{AppId, AppInstance};
 use vibe_hauler_discovery::PathContext;
 
 use crate::{
-    AppAdapter, aider::AiderAdapter, claude::ClaudeAdapter, codex::CodexAdapter,
-    gemini::GeminiAdapter,
+    AppAdapter, cherry::CherryStudioAdapter, claude::ClaudeAdapter, codex::CodexAdapter,
+    cursor::CursorAdapter, deepchat::DeepChatAdapter, gemini::GeminiAdapter,
 };
 
 #[derive(Default)]
@@ -26,7 +26,9 @@ impl AdapterRegistry {
                 Box::<ClaudeAdapter>::default(),
                 Box::<CodexAdapter>::default(),
                 Box::<GeminiAdapter>::default(),
-                Box::<AiderAdapter>::default(),
+                Box::<CursorAdapter>::default(),
+                Box::<CherryStudioAdapter>::default(),
+                Box::<DeepChatAdapter>::default(),
             ],
         }
     }
@@ -82,7 +84,7 @@ mod tests {
     use vibe_hauler_core::AppId;
 
     #[test]
-    fn v01_registry_has_four_adapters() {
+    fn registry_has_supported_adapters() {
         let registry = AdapterRegistry::v01();
         let ids = registry
             .adapters()
@@ -91,7 +93,14 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(
             ids,
-            vec![AppId::Claude, AppId::Codex, AppId::Gemini, AppId::Aider]
+            vec![
+                AppId::Claude,
+                AppId::Codex,
+                AppId::Gemini,
+                AppId::Cursor,
+                AppId::CherryStudio,
+                AppId::DeepChat
+            ]
         );
     }
 }

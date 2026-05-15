@@ -352,10 +352,18 @@ fn session_as_item(session: &AgentSession) -> Option<InventoryItem> {
         kind: crate::models::ItemKind::Session,
         size_bytes: session.size_bytes,
         modified_at: session.updated_at.clone(),
-        risk: RiskLevel::Yellow,
-        recommendation: Recommendation::Review,
-        reason: "selected session history requires backup before trash".to_owned(),
-        backup_required: true,
+        risk: session.risk,
+        recommendation: if session.risk == RiskLevel::Yellow {
+            Recommendation::Review
+        } else {
+            Recommendation::ReportOnly
+        },
+        reason: if session.risk == RiskLevel::Yellow {
+            "selected session history requires backup before trash".to_owned()
+        } else {
+            "database-backed session is report-only".to_owned()
+        },
+        backup_required: session.risk == RiskLevel::Yellow,
         parser: Some(session.parser.clone()),
         evidence: vec!["session cleanup selection".to_owned()],
     })

@@ -39,7 +39,10 @@ fn non_tty_portable_root_renders_app_selection() {
     assert!(stdout.contains("Claude Code"));
     assert!(stdout.contains("Codex"));
     assert!(stdout.contains("Gemini CLI"));
-    assert!(stdout.contains("Aider"));
+    assert!(stdout.contains("Cursor"));
+    assert!(stdout.contains("Cherry Studio"));
+    assert!(stdout.contains("DeepChat"));
+    assert!(!stdout.contains("Aider"));
 }
 
 #[test]

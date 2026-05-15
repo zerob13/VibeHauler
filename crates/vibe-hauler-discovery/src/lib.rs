@@ -8,7 +8,6 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 use vibe_hauler_core::{AppId, DetectionConfidence, OsKind, RootKind};
-use walkdir::WalkDir;
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct PathContext {
@@ -136,97 +135,140 @@ impl StandardRootResolver {
     }
 
     fn known_roots(app: &AppId, ctx: &PathContext) -> Vec<CandidateRoot> {
-        let mut roots = Vec::new();
         match app {
-            AppId::Claude => {
+            AppId::Claude => Self::claude_roots(app, ctx),
+            AppId::Codex => Self::codex_roots(app, ctx),
+            AppId::Gemini => Self::gemini_roots(app, ctx),
+            AppId::Cursor => Self::cursor_roots(app, ctx),
+            AppId::CherryStudio => Self::cherry_roots(app, ctx),
+            AppId::DeepChat => Self::deepchat_roots(app, ctx),
+            _ => Vec::new(),
+        }
+    }
+
+    fn claude_roots(app: &AppId, ctx: &PathContext) -> Vec<CandidateRoot> {
+        let mut roots = Vec::new();
+        push(
+            &mut roots,
+            app,
+            ctx.home.join(".claude"),
+            RootKind::Config,
+            "home .claude",
+        );
+        push_config_variants(
+            &mut roots,
+            app,
+            ctx,
+            ["claude", "Claude"],
+            RootKind::Config,
+            "config dir",
+        );
+        roots
+    }
+
+    fn codex_roots(app: &AppId, ctx: &PathContext) -> Vec<CandidateRoot> {
+        let mut roots = Vec::new();
+        if let Some(env_home) = env::var_os("CODEX_HOME").map(PathBuf::from) {
+            roots.push(CandidateRoot {
+                app: app.clone(),
+                path: env_home,
+                kind: RootKind::Config,
+                confidence: DetectionConfidence::Exact,
+                evidence: vec!["CODEX_HOME".to_owned()],
+            });
+        }
+        push(
+            &mut roots,
+            app,
+            ctx.home.join(".codex"),
+            RootKind::Config,
+            "home .codex",
+        );
+        push_config_variants(
+            &mut roots,
+            app,
+            ctx,
+            ["codex", "Codex"],
+            RootKind::Config,
+            "config dir",
+        );
+        roots
+    }
+
+    fn gemini_roots(app: &AppId, ctx: &PathContext) -> Vec<CandidateRoot> {
+        let mut roots = Vec::new();
+        push(
+            &mut roots,
+            app,
+            ctx.home.join(".gemini"),
+            RootKind::Config,
+            "home .gemini",
+        );
+        push_config_variants(
+            &mut roots,
+            app,
+            ctx,
+            ["gemini", "Gemini"],
+            RootKind::Config,
+            "config dir",
+        );
+        roots
+    }
+
+    fn cursor_roots(app: &AppId, ctx: &PathContext) -> Vec<CandidateRoot> {
+        let mut roots = Vec::new();
+        push(
+            &mut roots,
+            app,
+            ctx.home.join(".cursor").join("User"),
+            RootKind::ElectronUserData,
+            "home .cursor user data",
+        );
+        if let Some(config_dir) = &ctx.config_dir {
+            push(
+                &mut roots,
+                app,
+                config_dir.join("Cursor").join("User"),
+                RootKind::ElectronUserData,
+                "Cursor Electron user data",
+            );
+        }
+        roots
+    }
+
+    fn cherry_roots(app: &AppId, ctx: &PathContext) -> Vec<CandidateRoot> {
+        let mut roots = Vec::new();
+        push_config_variants(
+            &mut roots,
+            app,
+            ctx,
+            ["CherryStudio", "CherryStudioDev", "cherry-studio"],
+            RootKind::ElectronUserData,
+            "Cherry Studio Electron user data",
+        );
+        roots
+    }
+
+    fn deepchat_roots(app: &AppId, ctx: &PathContext) -> Vec<CandidateRoot> {
+        let mut roots = Vec::new();
+        push_config_variants(
+            &mut roots,
+            app,
+            ctx,
+            ["DeepChat", "deepchat"],
+            RootKind::ElectronUserData,
+            "DeepChat Electron user data",
+        );
+        if let Some(data_dir) = &ctx.data_dir {
+            for name in ["DeepChat", "deepchat"] {
                 push(
                     &mut roots,
                     app,
-                    ctx.home.join(".claude"),
-                    RootKind::Config,
-                    "home .claude",
+                    data_dir.join(name),
+                    RootKind::Data,
+                    "DeepChat data dir",
                 );
-                if let Some(config_dir) = &ctx.config_dir {
-                    push(
-                        &mut roots,
-                        app,
-                        config_dir.join("claude"),
-                        RootKind::Config,
-                        "config dir",
-                    );
-                    push(
-                        &mut roots,
-                        app,
-                        config_dir.join("Claude"),
-                        RootKind::Config,
-                        "config dir",
-                    );
-                }
             }
-            AppId::Codex => {
-                let env_home = env::var_os("CODEX_HOME").map(PathBuf::from);
-                if let Some(env_home) = env_home {
-                    roots.push(CandidateRoot {
-                        app: app.clone(),
-                        path: env_home,
-                        kind: RootKind::Config,
-                        confidence: DetectionConfidence::Exact,
-                        evidence: vec!["CODEX_HOME".to_owned()],
-                    });
-                }
-                push(
-                    &mut roots,
-                    app,
-                    ctx.home.join(".codex"),
-                    RootKind::Config,
-                    "home .codex",
-                );
-                if let Some(config_dir) = &ctx.config_dir {
-                    push(
-                        &mut roots,
-                        app,
-                        config_dir.join("codex"),
-                        RootKind::Config,
-                        "config dir",
-                    );
-                    push(
-                        &mut roots,
-                        app,
-                        config_dir.join("Codex"),
-                        RootKind::Config,
-                        "config dir",
-                    );
-                }
-            }
-            AppId::Gemini => {
-                push(
-                    &mut roots,
-                    app,
-                    ctx.home.join(".gemini"),
-                    RootKind::Config,
-                    "home .gemini",
-                );
-                if let Some(config_dir) = &ctx.config_dir {
-                    push(
-                        &mut roots,
-                        app,
-                        config_dir.join("gemini"),
-                        RootKind::Config,
-                        "config dir",
-                    );
-                    push(
-                        &mut roots,
-                        app,
-                        config_dir.join("Gemini"),
-                        RootKind::Config,
-                        "config dir",
-                    );
-                }
-            }
-            AppId::Aider => {
-                roots.extend(find_aider_repos(ctx));
-            }
-            _ => {}
         }
         roots
     }
@@ -276,92 +318,19 @@ fn push(
     });
 }
 
-fn find_aider_repos(ctx: &PathContext) -> Vec<CandidateRoot> {
-    let scan_roots = aider_scan_roots(ctx);
-    let mut roots = scan_roots
-        .iter()
-        .flat_map(|root| scan_aider_root(root, ctx, aider_scan_depth(ctx)))
-        .collect::<Vec<_>>();
-    roots.sort_by(|left, right| left.path.cmp(&right.path));
-    roots.dedup_by(|left, right| left.path == right.path);
-    roots
-}
-
-fn aider_scan_roots(ctx: &PathContext) -> Vec<PathBuf> {
-    if ctx.portable_root.is_some() {
-        return vec![ctx.home.clone()];
+fn push_config_variants<const N: usize>(
+    roots: &mut Vec<CandidateRoot>,
+    app: &AppId,
+    ctx: &PathContext,
+    names: [&str; N],
+    kind: RootKind,
+    evidence: &str,
+) {
+    if let Some(config_dir) = &ctx.config_dir {
+        for name in names {
+            push(roots, app, config_dir.join(name), kind, evidence);
+        }
     }
-
-    let mut roots = env::current_dir().ok().into_iter().collect::<Vec<_>>();
-    roots.extend(
-        [
-            "work",
-            "workspace",
-            "Documents/workspace",
-            "Code",
-            "Projects",
-            "src",
-            "dev",
-        ]
-        .into_iter()
-        .map(|child| ctx.home.join(child)),
-    );
-    roots.retain(|path| path.exists());
-    roots.sort();
-    roots.dedup();
-    roots
-}
-
-fn aider_scan_depth(ctx: &PathContext) -> usize {
-    if ctx.portable_root.is_some() { 8 } else { 5 }
-}
-
-fn scan_aider_root(root: &Path, ctx: &PathContext, max_depth: usize) -> Vec<CandidateRoot> {
-    WalkDir::new(root)
-        .follow_links(false)
-        .max_depth(max_depth)
-        .into_iter()
-        .filter_entry(|entry| !is_skipped_dir(entry.path(), &ctx.home))
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_file())
-        .filter_map(|entry| {
-            let name = entry.file_name().to_string_lossy();
-            matches!(
-                name.as_ref(),
-                ".aider.chat.history.md" | ".aider.input.history" | ".aider.llm.history"
-            )
-            .then(|| entry.path().parent().map(Path::to_path_buf))
-            .flatten()
-        })
-        .map(|path| CandidateRoot {
-            app: AppId::Aider,
-            path,
-            kind: RootKind::RepoLocal,
-            confidence: DetectionConfidence::Strong,
-            evidence: vec!["aider history file".to_owned()],
-        })
-        .collect::<Vec<_>>()
-}
-
-fn is_skipped_dir(path: &Path, home: &Path) -> bool {
-    if path == home || !path.is_dir() {
-        return false;
-    }
-    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    matches!(
-        name,
-        ".git"
-            | "node_modules"
-            | "target"
-            | ".vibe-hauler"
-            | "Library"
-            | "AppData"
-            | ".cache"
-            | ".cargo"
-            | ".rustup"
-    ) || (name.starts_with('.') && name != ".config" && name != ".local")
 }
 
 #[cfg(test)]
@@ -386,7 +355,14 @@ mod tests {
         ] {
             let ctx = PathContext::for_portable_root(fixture(fixture_name), os);
             let resolver = StandardRootResolver::default();
-            for app in [AppId::Claude, AppId::Codex, AppId::Gemini, AppId::Aider] {
+            for app in [
+                AppId::Claude,
+                AppId::Codex,
+                AppId::Gemini,
+                AppId::Cursor,
+                AppId::CherryStudio,
+                AppId::DeepChat,
+            ] {
                 let roots = resolver
                     .candidate_roots(&app, &ctx)
                     .expect("roots should resolve");

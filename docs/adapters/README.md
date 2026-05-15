@@ -9,12 +9,11 @@ Adapters are the app-specific layer. Their job is to turn local client data into
 | Claude Code | v0.1 | Full | `CLAUDE_CONFIG_DIR`, `~/.claude` | `projects/**/*.jsonl` | logs/cache/tmp; sessions only by selection |
 | Codex | v0.1 | Full | `CODEX_HOME`, `~/.codex` | `history.jsonl`, `sessions/**` | logs/cache/tmp; sessions only by selection |
 | Gemini CLI | v0.1 | Full | `~/.gemini` | `tmp/*/chats/**` | logs/cache/tmp; chats only by selection |
-| Aider | v0.1 | Full | repo-local | `.aider.chat.history.md` | history only by selection |
 | OpenCode | v0.2 | Sniffer | XDG config/data/cache | JSON/JSONL sniff | logs/cache/tmp |
-| Cursor | v0.2 | Protective | VS Code-like user data | `state.vscdb` key families | cache/log only |
+| Cursor | current | Protective | VS Code-like user data | report-only `state.vscdb` | cache/log only |
 | Goose | v0.2 | Protective | data/config dirs | `sessions.db` report | logs only |
-| Cherry Studio | v0.3 | Protective | Electron userData | backup JSON, localStorage report | trace/cache/log only |
-| DeepChat | v0.3 | Protective | Electron userData | SQLite schema report | cache/log only |
+| Cherry Studio | current | Protective | Electron userData | report-only LevelDB/IndexedDB/SQLite stores | trace/cache/log only |
+| DeepChat | current | Protective | Electron userData | read-only `agent.db`; legacy `chat.db` fallback | cache/log/tmp only |
 | Alma | v0.3 | Protective | Electron userData | `chat_threads.db` report | none by default |
 | Factory Droid | later | Sniffer | `~/.factory`, repo `.factory` | file fingerprinting | logs/tmp only |
 | Copilot CLI | later | Sniffer | `~/.copilot` | logs/cache initially | logs/cache |
@@ -93,26 +92,6 @@ Parser:
 - JSON/JSONL and directory metadata.
 - Project hash mapping is best-effort unless user provides roots.
 
-## Aider
-
-Root model:
-
-- repo-local, not global.
-
-Files:
-
-| Path | Risk | Action |
-|---|---|---|
-| `.aider.chat.history.md` | Yellow | parse sessions |
-| `.aider.input.history` | Yellow | input history |
-| `.aider.llm.history` | Yellow | raw LLM history |
-| `.aider.conf.yml` | Red | protect |
-
-Parser:
-
-- Markdown segmentation.
-- Repo root from file location.
-
 ## Cursor
 
 Roots:
@@ -130,7 +109,7 @@ Inventory:
 | Cache/logs/GPUCache | Green | safe cleanup |
 | settings/keybindings/extensions state | Red | protect |
 
-Cursor is not part of v0.1. When added, it must not compact or replace Cursor DBs. It may generate a readonly report.
+Cursor must not compact or replace Cursor DBs. Current support is protective: detect DBs as report-only inventory and clean only rebuildable cache/log folders.
 
 ## Cherry Studio
 
@@ -174,8 +153,8 @@ Inventory:
 
 | Path | Risk | Action |
 |---|---|---|
-| `app_db/chat.db` | Red | readonly conversation report |
-| `app_db/agent.db` | Red | readonly agent report |
+| `app_db/agent.db` | Black | readonly session/message report |
+| `app_db/chat.db` | Black | legacy readonly conversation fallback |
 | DuckDB knowledge bases | Red | protect |
 | cache/logs | Green | safe cleanup |
 
@@ -231,10 +210,10 @@ Inventory:
 1. Claude.
 2. Codex.
 3. Gemini.
-4. Aider.
-5. OpenCode sniffer.
-6. Cursor protective report.
-7. Goose SQLite report.
-8. Cherry protective report plus backup JSON parser.
-9. DeepChat/Alma SQLite reports.
+4. Cursor protective report.
+5. Cherry Studio protective report.
+6. DeepChat protective report.
+7. OpenCode sniffer.
+8. Goose SQLite report.
+9. Alma SQLite reports.
 10. Droid/Copilot sniffers.

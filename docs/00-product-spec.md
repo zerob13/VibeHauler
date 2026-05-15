@@ -41,9 +41,9 @@ Secondary users:
 6. Prefer reversible cleanup: OS Trash first, backup for Yellow items, manifest for every mutation.
 7. Cross-platform by design: macOS, Linux, Windows, and WSL are first-class in the path model.
 
-## MVP Scope
+## Active Scope
 
-The first working release should ship as a Rust CLI named `vhaul`.
+The working release ships as a Rust CLI named `vhaul`.
 
 Required command:
 
@@ -53,23 +53,25 @@ vhaul
 
 The TUI owns app discovery, app selection, safe cleanup, session review, confirmation, manifest display, and restore guidance. There are no public operational subcommands in the MVP.
 
-MVP adapters:
+Current adapters:
 
-| Client | Detection | Size Report | Sessions | Safe Cleanup |
-|---|---:|---:|---:|---:|
-| Claude Code | yes | yes | JSONL | logs/cache/tmp |
-| Codex | yes | yes | JSONL/history | logs/cache/tmp |
-| Gemini CLI | yes | yes | JSON/JSONL | logs/cache/tmp |
-| Aider | repo discovery | yes | Markdown/history | selected history only |
+| Client | Tier | Detection | Size Report | Sessions | Safe Cleanup |
+|---|---|---:|---:|---:|---:|
+| Claude Code | Full | yes | yes | JSONL | logs/cache/tmp |
+| Codex | Full | yes | yes | JSONL/history | logs/cache/tmp |
+| Gemini CLI | Full | yes | yes | JSON/JSONL | logs/cache/tmp |
+| Cursor | Protective | yes | yes | report-only DB state | cache/log only |
+| Cherry Studio | Protective | yes | yes | report-only browser/SQLite stores | trace/cache/log only |
+| DeepChat | Protective | yes | yes | read-only `agent.db` sessions | cache/log/tmp only |
 
-Non-MVP app IDs may exist in code and docs, but v0.1 should not promise their cleanup behavior.
+Non-current app IDs may exist in code and docs, but the default registry should only promise behavior for the adapters above.
 
 Post-MVP adapter order:
 
 | Stage | Clients | Scope |
 |---|---|---|
-| v0.2 | OpenCode, Cursor, Goose | detection, safe logs/cache, readonly reports |
-| v0.3 | Cherry Studio, DeepChat, Alma | backup import, SQLite reports, protective desktop-client review |
+| v0.2 | OpenCode, Goose | detection, safe logs/cache, readonly reports |
+| v0.3 | richer Cursor/Cherry Studio/DeepChat reports, Alma | backup import, SQLite reports, protective desktop-client review |
 | later | Factory Droid, Copilot CLI | file sniffing and safe logs/cache only after fixtures exist |
 
 ## Risk Language

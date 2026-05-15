@@ -3,10 +3,12 @@
 use vibe_hauler_core::{AgentSession, AppId, AppInstance, InventoryItem};
 use vibe_hauler_discovery::PathContext;
 
-pub mod aider;
+pub mod cherry;
 pub mod claude;
 pub mod codex;
 mod common;
+pub mod cursor;
+pub mod deepchat;
 pub mod gemini;
 pub mod registry;
 
@@ -32,12 +34,12 @@ pub struct CleanRule {
 
 #[cfg(test)]
 mod tests {
-    use vibe_hauler_core::{AppId, RiskLevel};
+    use vibe_hauler_core::RiskLevel;
     use vibe_hauler_discovery::PathContext;
 
     use crate::{
-        AppAdapter, aider::AiderAdapter, claude::ClaudeAdapter, codex::CodexAdapter,
-        gemini::GeminiAdapter,
+        AppAdapter, cherry::CherryStudioAdapter, claude::ClaudeAdapter, codex::CodexAdapter,
+        cursor::CursorAdapter, deepchat::DeepChatAdapter, gemini::GeminiAdapter,
     };
 
     fn fixture(name: &str) -> std::path::PathBuf {
@@ -49,7 +51,7 @@ mod tests {
     }
 
     #[test]
-    fn each_v01_adapter_detects_inventory_and_sessions() {
+    fn full_session_adapters_detect_inventory_and_sessions() {
         for fixture_name in ["macos-home", "linux-home", "windows-home"] {
             let root = fixture(fixture_name);
             let os = PathContext::infer_portable_os(&root);
@@ -58,7 +60,6 @@ mod tests {
                 Box::new(ClaudeAdapter),
                 Box::new(CodexAdapter),
                 Box::new(GeminiAdapter),
-                Box::new(AiderAdapter),
             ];
 
             for adapter in adapters {
@@ -73,13 +74,65 @@ mod tests {
                     "{fixture_name} {:?} should expose Yellow history",
                     adapter.id()
                 );
-                if adapter.id() != AppId::Aider {
+                assert!(
+                    inventory.iter().any(|item| item.risk == RiskLevel::Green),
+                    "{fixture_name} {:?} should expose Green cleanup",
+                    adapter.id()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn protective_desktop_adapters_detect_inventory() {
+        for fixture_name in ["macos-home", "linux-home", "windows-home"] {
+            let root = fixture(fixture_name);
+            let os = PathContext::infer_portable_os(&root);
+            let ctx = PathContext::for_portable_root(root, os);
+            let adapters: Vec<(Box<dyn AppAdapter>, bool)> = vec![
+                (Box::new(CursorAdapter), false),
+                (Box::new(CherryStudioAdapter), false),
+                (Box::new(DeepChatAdapter), true),
+            ];
+
+            for (adapter, expects_readonly_sessions) in adapters {
+                let instances = adapter.detect(&ctx).expect("detect");
+                assert!(!instances.is_empty(), "{fixture_name} {:?}", adapter.id());
+                let inventory = adapter.inventory(&instances[0]).expect("inventory");
+                let sessions = adapter.sessions(&instances[0]).expect("sessions");
+                assert!(!inventory.is_empty(), "{fixture_name} {:?}", adapter.id());
+                if expects_readonly_sessions {
                     assert!(
-                        inventory.iter().any(|item| item.risk == RiskLevel::Green),
-                        "{fixture_name} {:?} should expose Green cleanup",
+                        !sessions.is_empty(),
+                        "{fixture_name} {:?} should expose read-only session reports",
+                        adapter.id()
+                    );
+                    assert!(
+                        sessions
+                            .iter()
+                            .all(|session| session.risk == RiskLevel::Black),
+                        "{fixture_name} {:?} DB sessions should stay report-only",
+                        adapter.id()
+                    );
+                } else {
+                    assert!(
+                        sessions.is_empty(),
+                        "{fixture_name} {:?} should not expose sessions yet",
                         adapter.id()
                     );
                 }
+                assert!(
+                    inventory.iter().any(|item| item.risk == RiskLevel::Green),
+                    "{fixture_name} {:?} should expose Green cleanup",
+                    adapter.id()
+                );
+                assert!(
+                    inventory
+                        .iter()
+                        .any(|item| matches!(item.risk, RiskLevel::Red | RiskLevel::Black)),
+                    "{fixture_name} {:?} should protect app state",
+                    adapter.id()
+                );
             }
         }
     }

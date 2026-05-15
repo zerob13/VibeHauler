@@ -56,18 +56,25 @@ pub struct RedactionConfig {
 
 impl Default for VibeHaulerConfig {
     fn default() -> Self {
-        let apps = [AppId::Claude, AppId::Codex, AppId::Gemini, AppId::Aider]
-            .into_iter()
-            .map(|app| {
-                (
-                    app.key().to_owned(),
-                    AppConfig {
-                        enabled: true,
-                        custom_roots: Vec::new(),
-                    },
-                )
-            })
-            .collect();
+        let apps = [
+            AppId::Claude,
+            AppId::Codex,
+            AppId::Gemini,
+            AppId::Cursor,
+            AppId::CherryStudio,
+            AppId::DeepChat,
+        ]
+        .into_iter()
+        .map(|app| {
+            (
+                app.key().to_owned(),
+                AppConfig {
+                    enabled: true,
+                    custom_roots: Vec::new(),
+                },
+            )
+        })
+        .collect();
 
         Self {
             general: GeneralConfig {
@@ -237,6 +244,14 @@ mod tests {
         let config = VibeHaulerConfig::load(None).expect("default config should load");
         assert!(config.general.local_only);
         assert!(config.app_enabled(&vibe_hauler_core::AppId::Claude));
+        assert!(config.app_enabled(&vibe_hauler_core::AppId::Cursor));
+        assert!(config.app_enabled(&vibe_hauler_core::AppId::CherryStudio));
+        assert!(config.app_enabled(&vibe_hauler_core::AppId::DeepChat));
+        assert!(
+            !config
+                .apps
+                .contains_key(vibe_hauler_core::AppId::Aider.key())
+        );
     }
 
     #[test]

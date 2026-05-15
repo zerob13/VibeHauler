@@ -36,7 +36,7 @@ Display names are UI labels and may contain spaces. `AppId` variants are code id
 | `DeepChat` | DeepChat |
 | `Gemini` | Gemini CLI |
 | `Goose` | Goose |
-| `Aider` | Aider |
+| `Aider` | Legacy parser-only ID; not registered by default |
 | `Alma` | Alma |
 | `FactoryDroid` | Factory Droid |
 | `CopilotCli` | Copilot CLI |
