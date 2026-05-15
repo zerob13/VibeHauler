@@ -1,0 +1,18 @@
+[package]
+name = "vibe-hauler-cleaner"
+description = "Cleanup and restore contracts for VibeHauler."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+vibe-hauler-core = { path = "../vibe-hauler-core" }
+
+[lints]
+workspace = true
+

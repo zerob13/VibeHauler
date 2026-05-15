@@ -1,0 +1,29 @@
+[package]
+name = "vibe-hauler"
+description = "A local-first cleaner for AI agent clients."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "vhaul"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+vibe-hauler-adapters = { path = "../vibe-hauler-adapters" }
+vibe-hauler-cleaner = { path = "../vibe-hauler-cleaner" }
+vibe-hauler-config = { path = "../vibe-hauler-config" }
+vibe-hauler-core = { path = "../vibe-hauler-core" }
+vibe-hauler-discovery = { path = "../vibe-hauler-discovery" }
+vibe-hauler-parsers = { path = "../vibe-hauler-parsers" }
+vibe-hauler-redaction = { path = "../vibe-hauler-redaction" }
+
+[lints]
+workspace = true
+
