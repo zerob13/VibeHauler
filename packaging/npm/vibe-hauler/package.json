@@ -1,6 +1,6 @@
 {
   "name": "vibe-hauler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A local-first cleaner for AI agent clients.",
   "license": "MIT",
   "repository": {
@@ -16,9 +16,9 @@
     "package.json"
   ],
   "optionalDependencies": {
-    "@vibehauler/vhaul-darwin-arm64": "0.1.0",
-    "@vibehauler/vhaul-darwin-x64": "0.1.0",
-    "@vibehauler/vhaul-linux-x64": "0.1.0",
-    "@vibehauler/vhaul-win32-x64": "0.1.0"
+    "@vibehauler/vhaul-darwin-arm64": "0.2.0",
+    "@vibehauler/vhaul-darwin-x64": "0.2.0",
+    "@vibehauler/vhaul-linux-x64": "0.2.0",
+    "@vibehauler/vhaul-win32-x64": "0.2.0"
   }
 }

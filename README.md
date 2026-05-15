@@ -229,10 +229,10 @@ target/release/vhaul --help
 Suggested artifact names:
 
 ```txt
-vhaul-v0.1.0-aarch64-apple-darwin.tar.gz
-vhaul-v0.1.0-x86_64-apple-darwin.tar.gz
-vhaul-v0.1.0-x86_64-unknown-linux-gnu.tar.gz
-vhaul-v0.1.0-x86_64-pc-windows-msvc.zip
+vhaul-v0.2.0-aarch64-apple-darwin.tar.gz
+vhaul-v0.2.0-x86_64-apple-darwin.tar.gz
+vhaul-v0.2.0-x86_64-unknown-linux-gnu.tar.gz
+vhaul-v0.2.0-x86_64-pc-windows-msvc.zip
 checksums.txt
 ```
 

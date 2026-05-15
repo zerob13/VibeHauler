@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.0 - 2026-05-15
+
+- Removes Aider from the default adapter set and keeps its Markdown parser coverage as a legacy parser regression.
+- Adds protective Cursor, Cherry Studio, and DeepChat adapters across macOS, Linux, and Windows-style fixture layouts.
+- Parses DeepChat `app_db/agent.db` sessions read-only from `new_sessions` and `deepchat_messages`, with legacy `chat.db` fallback.
+- Marks database-backed desktop sessions as report-only so TUI review can inspect them without enabling unsafe DB mutation.
+- Improves the TUI session browser with pagination, filtering, scroll-aware cursors, report-only feedback, and global Ctrl+C exit.
+- Fixes database-backed session size aggregation so one SQLite database is counted once instead of once per session row.
+- Adds fixture coverage for Cursor, Cherry Studio, and DeepChat fake homes.
+
 ## v0.1.0 - 2026-05-15
 
 Initial public release of VibeHauler.

@@ -46,7 +46,7 @@ Optional release targets such as `aarch64-unknown-linux-gnu` and `aarch64-pc-win
 ```json
 {
   "name": "vibe-hauler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A local-first cleaner for AI agent clients.",
   "license": "MIT",
   "repository": {
@@ -62,10 +62,10 @@ Optional release targets such as `aarch64-unknown-linux-gnu` and `aarch64-pc-win
     "package.json"
   ],
   "optionalDependencies": {
-    "@vibehauler/vhaul-darwin-arm64": "0.1.0",
-    "@vibehauler/vhaul-darwin-x64": "0.1.0",
-    "@vibehauler/vhaul-linux-x64": "0.1.0",
-    "@vibehauler/vhaul-win32-x64": "0.1.0"
+    "@vibehauler/vhaul-darwin-arm64": "0.2.0",
+    "@vibehauler/vhaul-darwin-x64": "0.2.0",
+    "@vibehauler/vhaul-linux-x64": "0.2.0",
+    "@vibehauler/vhaul-win32-x64": "0.2.0"
   }
 }
 ```
@@ -77,7 +77,7 @@ Example:
 ```json
 {
   "name": "@vibehauler/vhaul-darwin-arm64",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "VibeHauler native binary for macOS arm64",
   "license": "MIT",
   "repository": {
@@ -136,11 +136,11 @@ vhaul --help
 All npm packages and the Rust release should use the same semver:
 
 ```txt
-Rust tag:        v0.1.0
-Cargo package:  vibe-hauler 0.1.0
-npm wrapper:    vibe-hauler 0.1.0
-npm native:     @vibehauler/vhaul-* 0.1.0
-Homebrew:       v0.1.0
+Rust tag:        v0.2.0
+Cargo package:  vibe-hauler 0.2.0
+npm wrapper:    vibe-hauler 0.2.0
+npm native:     @vibehauler/vhaul-* 0.2.0
+Homebrew:       v0.2.0
 ```
 
 ## Docs References

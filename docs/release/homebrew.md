@@ -56,7 +56,7 @@ The simplest first formula builds from the GitHub release source tarball:
 class VibeHauler < Formula
   desc "Local-first cleaner for AI agent clients"
   homepage "https://github.com/zerob13/VibeHauler"
-  url "https://github.com/zerob13/VibeHauler/archive/refs/tags/v0.1.0.tar.gz"
+  url "https://github.com/zerob13/VibeHauler/archive/refs/tags/v0.2.0.tar.gz"
   sha256 "<source-tarball-sha256>"
   license "MIT"
 
@@ -89,11 +89,11 @@ Bottles reduce install time. Homebrew bottle metadata must be kept in sync with 
 For Homebrew, publish:
 
 ```txt
-vibe-hauler-v0.1.0-source.tar.gz
-vibe-hauler-v0.1.0-source.tar.gz.sha256
-vhaul-v0.1.0-aarch64-apple-darwin.tar.gz
-vhaul-v0.1.0-x86_64-apple-darwin.tar.gz
-vhaul-v0.1.0-x86_64-unknown-linux-gnu.tar.gz
+vibe-hauler-v0.2.0-source.tar.gz
+vibe-hauler-v0.2.0-source.tar.gz.sha256
+vhaul-v0.2.0-aarch64-apple-darwin.tar.gz
+vhaul-v0.2.0-x86_64-apple-darwin.tar.gz
+vhaul-v0.2.0-x86_64-unknown-linux-gnu.tar.gz
 checksums.txt
 checksums.txt.sig
 ```
