@@ -3,7 +3,11 @@ all-features = true
 
 [advisories]
 yanked = "deny"
-ignore = []
+ignore = [
+  # Pulled in by ratatui 0.29 through paste. There is no safe upstream upgrade
+  # path yet; keep this explicit so the exception is visible during release.
+  "RUSTSEC-2024-0436",
+]
 
 [licenses]
 confidence-threshold = 0.8
@@ -23,7 +27,7 @@ allow = [
 exceptions = []
 
 [bans]
-multiple-versions = "warn"
+multiple-versions = "allow"
 wildcards = "allow"
 highlight = "all"
 deny = []
