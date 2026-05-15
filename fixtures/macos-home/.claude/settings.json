@@ -1,0 +1,6 @@
+{
+  "apiKey": "sk-ant-fixture-redacted",
+  "permissions": {
+    "allow": ["Read", "Edit"]
+  }
+}

@@ -11,10 +11,14 @@ rust-version.workspace = true
 
 [dependencies]
 anyhow.workspace = true
+chrono.workspace = true
+hex.workspace = true
+sha2.workspace = true
 vibe-hauler-core = { path = "../vibe-hauler-core" }
 vibe-hauler-discovery = { path = "../vibe-hauler-discovery" }
 vibe-hauler-parsers = { path = "../vibe-hauler-parsers" }
 vibe-hauler-redaction = { path = "../vibe-hauler-redaction" }
+walkdir.workspace = true
 
 [lints]
 workspace = true

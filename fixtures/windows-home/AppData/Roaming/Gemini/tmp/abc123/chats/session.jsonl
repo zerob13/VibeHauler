@@ -1,0 +1,3 @@
+{"type":"user","timestamp":"2026-05-15T10:00:00Z","cwd":"C:\\work\\demo","content":"Write a README"}
+{"type":"assistant","timestamp":"2026-05-15T10:01:00Z","cwd":"C:\\work\\demo","content":"Here is the README..."}
+{"type":"unknown_event","timestamp":"2026-05-15T10:02:00Z","payload":{}}

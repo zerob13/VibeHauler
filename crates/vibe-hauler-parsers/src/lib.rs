@@ -1,4 +1,4 @@
-#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_errors_doc, clippy::module_name_repetitions)]
 
 use std::path::PathBuf;
 
@@ -30,3 +30,5 @@ pub mod jsonl;
 pub mod leveldb;
 pub mod markdown;
 pub mod sqlite;
+pub use jsonl::JsonlSessionParser;
+pub use markdown::MarkdownHistoryParser;

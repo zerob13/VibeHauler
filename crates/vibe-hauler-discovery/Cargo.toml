@@ -11,8 +11,9 @@ rust-version.workspace = true
 
 [dependencies]
 vibe-hauler-core = { path = "../vibe-hauler-core" }
+anyhow.workspace = true
 serde.workspace = true
+walkdir.workspace = true
 
 [lints]
 workspace = true
-

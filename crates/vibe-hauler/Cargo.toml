@@ -16,11 +16,16 @@ path = "src/main.rs"
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
+crossterm.workspace = true
+ratatui.workspace = true
 vibe-hauler-adapters = { path = "../vibe-hauler-adapters" }
 vibe-hauler-cleaner = { path = "../vibe-hauler-cleaner" }
 vibe-hauler-config = { path = "../vibe-hauler-config" }
 vibe-hauler-core = { path = "../vibe-hauler-core" }
 vibe-hauler-discovery = { path = "../vibe-hauler-discovery" }
+
+[dev-dependencies]
+tempfile.workspace = true
 
 [lints]
 workspace = true

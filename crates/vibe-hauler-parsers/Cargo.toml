@@ -11,8 +11,16 @@ rust-version.workspace = true
 
 [dependencies]
 anyhow.workspace = true
+chrono.workspace = true
+hex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
 vibe-hauler-core = { path = "../vibe-hauler-core" }
 vibe-hauler-redaction = { path = "../vibe-hauler-redaction" }
+
+[dev-dependencies]
+tempfile.workspace = true
 
 [lints]
 workspace = true

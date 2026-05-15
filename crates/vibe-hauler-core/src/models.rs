@@ -2,10 +2,10 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::ids::{InstanceId, SessionId};
+use crate::ids::{InstanceId, ItemId, SessionId};
 use crate::risk::{Recommendation, RiskLevel};
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum AppId {
     Claude,
     Codex,
@@ -22,7 +22,66 @@ pub enum AppId {
     Unknown(String),
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+impl AppId {
+    #[must_use]
+    pub fn display_name(&self) -> &str {
+        match self {
+            Self::Claude => "Claude Code",
+            Self::Codex => "Codex",
+            Self::OpenCode => "OpenCode",
+            Self::Cursor => "Cursor",
+            Self::CherryStudio => "Cherry Studio",
+            Self::DeepChat => "DeepChat",
+            Self::Gemini => "Gemini CLI",
+            Self::Goose => "Goose",
+            Self::Aider => "Aider",
+            Self::Alma => "Alma",
+            Self::FactoryDroid => "Factory Droid",
+            Self::CopilotCli => "Copilot CLI",
+            Self::Unknown(value) => value.as_str(),
+        }
+    }
+
+    #[must_use]
+    pub fn key(&self) -> &str {
+        match self {
+            Self::Claude => "claude",
+            Self::Codex => "codex",
+            Self::OpenCode => "opencode",
+            Self::Cursor => "cursor",
+            Self::CherryStudio => "cherry",
+            Self::DeepChat => "deepchat",
+            Self::Gemini => "gemini",
+            Self::Goose => "goose",
+            Self::Aider => "aider",
+            Self::Alma => "alma",
+            Self::FactoryDroid => "factory-droid",
+            Self::CopilotCli => "copilot-cli",
+            Self::Unknown(value) => value.as_str(),
+        }
+    }
+
+    #[must_use]
+    pub fn from_key(value: &str) -> Self {
+        match value.trim().to_ascii_lowercase().as_str() {
+            "claude" | "claude-code" | "claudecode" => Self::Claude,
+            "codex" => Self::Codex,
+            "opencode" | "open-code" => Self::OpenCode,
+            "cursor" => Self::Cursor,
+            "cherry" | "cherry-studio" | "cherrystudio" => Self::CherryStudio,
+            "deepchat" | "deep-chat" => Self::DeepChat,
+            "gemini" | "gemini-cli" => Self::Gemini,
+            "goose" => Self::Goose,
+            "aider" => Self::Aider,
+            "alma" => Self::Alma,
+            "factory-droid" | "factorydroid" => Self::FactoryDroid,
+            "copilot" | "copilot-cli" => Self::CopilotCli,
+            other => Self::Unknown(other.to_owned()),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum OsKind {
     MacOS,
     Linux,
@@ -30,7 +89,20 @@ pub enum OsKind {
     Wsl,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+impl OsKind {
+    #[must_use]
+    pub const fn current() -> Self {
+        if cfg!(target_os = "macos") {
+            Self::MacOS
+        } else if cfg!(target_os = "windows") {
+            Self::Windows
+        } else {
+            Self::Linux
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum RootKind {
     Config,
     Data,
@@ -41,7 +113,7 @@ pub enum RootKind {
     UserProvided,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum DetectionConfidence {
     Weak,
     Strong,
@@ -61,7 +133,7 @@ pub struct AppInstance {
     pub evidence: Vec<String>,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum ItemKind {
     File,
     Directory,
@@ -77,7 +149,7 @@ pub enum ItemKind {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct InventoryItem {
-    pub id: String,
+    pub id: ItemId,
     pub app: AppId,
     pub instance_id: InstanceId,
     pub path: PathBuf,
