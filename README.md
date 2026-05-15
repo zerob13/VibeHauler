@@ -38,10 +38,16 @@ During development, run directly:
 cargo run -p vibe-hauler --
 ```
 
-Planned distribution channels:
+Homebrew:
 
 ```bash
 brew install zerob13/tap/vibe-hauler
+vhaul
+```
+
+Planned npm distribution:
+
+```bash
 npm install -g vibe-hauler
 ```
 

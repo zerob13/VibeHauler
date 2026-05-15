@@ -6,3 +6,6 @@
 *.tmp
 *.log
 
+!fixtures/**/*.tmp
+!fixtures/**/*.log
+/dist/
