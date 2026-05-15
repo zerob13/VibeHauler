@@ -75,6 +75,11 @@ fn tmux_tui_snapshot_flow_when_available() {
 
     run_tmux(["send-keys", "-t", &session, "Enter"]);
     thread::sleep(Duration::from_millis(800));
+    let confirm = capture(&session);
+    assert!(confirm.contains("Confirm safe cleanup"));
+
+    run_tmux(["send-keys", "-t", &session, "y"]);
+    thread::sleep(Duration::from_millis(800));
     let session_overview = capture(&session);
     assert!(session_overview.contains("Session Data"));
 

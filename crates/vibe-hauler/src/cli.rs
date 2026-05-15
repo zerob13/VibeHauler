@@ -8,6 +8,7 @@
 
 use std::{
     collections::{BTreeMap, BTreeSet},
+    env,
     io::{self, IsTerminal},
     path::{Path, PathBuf},
     time::Duration,
@@ -21,9 +22,12 @@ use crossterm::{
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use ratatui::{
-    Terminal,
+    Frame, Terminal,
     backend::CrosstermBackend,
-    widgets::{Clear, Paragraph},
+    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
+    style::{Color, Modifier, Style},
+    text::{Line, Span},
+    widgets::{Block, Borders, Clear, Padding, Paragraph, Wrap},
 };
 use vibe_hauler_adapters::registry::AdapterRegistry;
 use vibe_hauler_cleaner::{CleanerConfig, ExecutionMode, FilesystemCleaner, PlanExecutor};
@@ -54,6 +58,7 @@ pub fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let mut app = TuiApp::new(cli)?;
     if !io::stdout().is_terminal() {
+        app.discover()?;
         println!("{}", app.render());
         return Ok(());
     }
@@ -65,12 +70,23 @@ fn run_terminal(app: &mut TuiApp) -> anyhow::Result<()> {
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout))?;
-    let result = loop {
+    let result = run_terminal_loop(&mut terminal, app);
+    let cleanup = cleanup_terminal(&mut terminal);
+    result.and(cleanup)
+}
+
+fn run_terminal_loop(
+    terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
+    app: &mut TuiApp,
+) -> anyhow::Result<()> {
+    loop {
         terminal.draw(|frame| {
-            let area = frame.area();
-            frame.render_widget(Clear, area);
-            frame.render_widget(Paragraph::new(app.render()), area);
+            render_tui(frame, app);
         })?;
+        if app.screen == Screen::Boot {
+            app.discover()?;
+            continue;
+        }
         if app.should_quit {
             break Ok(());
         }
@@ -79,18 +95,302 @@ fn run_terminal(app: &mut TuiApp) -> anyhow::Result<()> {
         {
             app.handle_key(key)?;
         }
-    };
+    }
+}
+
+fn cleanup_terminal(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>) -> anyhow::Result<()> {
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
     terminal.show_cursor()?;
-    result
+    Ok(())
+}
+
+fn render_tui(frame: &mut Frame<'_>, app: &TuiApp) {
+    let palette = Palette::new(app.cli.no_color);
+    let area = frame.area();
+    frame.render_widget(Block::default().style(palette.background), area);
+
+    let shell = area.inner(Margin {
+        vertical: 1,
+        horizontal: 2,
+    });
+    let vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(7),
+            Constraint::Min(10),
+            Constraint::Length(2),
+        ])
+        .split(shell);
+
+    render_header(frame, vertical[0], palette);
+    render_content(frame, vertical[1], app, palette);
+    render_footer(frame, vertical[2], app, palette);
+
+    match app.screen {
+        Screen::SafeConfirmation => render_confirm_modal(
+            frame,
+            shell,
+            palette,
+            "Confirm safe cleanup",
+            &[
+                format!(
+                    "Move {} selected Green items to managed Trash?",
+                    app.selected_safe_count()
+                ),
+                "Press y to clean or n to cancel.".to_owned(),
+            ],
+        ),
+        Screen::SessionConfirmation => render_confirm_modal(
+            frame,
+            shell,
+            palette,
+            "Confirm session cleanup",
+            &[
+                format!(
+                    "Back up and move {} selected Yellow sessions to Trash?",
+                    app.selected_session_count()
+                ),
+                "Press y to continue or n to cancel.".to_owned(),
+            ],
+        ),
+        _ => {}
+    }
+}
+
+fn render_header(frame: &mut Frame<'_>, area: Rect, palette: Palette) {
+    let chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Min(38), Constraint::Length(48)])
+        .split(area);
+    let logo = Paragraph::new(vec![
+        Line::from(vec![Span::styled(
+            "VHAUL",
+            palette.logo.add_modifier(Modifier::BOLD),
+        )]),
+        Line::from(Span::styled("Haul away your agent clutter.", palette.muted)),
+        Line::from(Span::styled(
+            "local-first / reversible / no telemetry",
+            palette.accent,
+        )),
+    ])
+    .block(
+        Block::default()
+            .borders(Borders::LEFT)
+            .border_style(palette.accent)
+            .padding(Padding::left(2)),
+    );
+    frame.render_widget(logo, chunks[0]);
+
+    let quick = Paragraph::new(vec![
+        Line::from(vec![
+            Span::styled("enter", palette.accent.add_modifier(Modifier::BOLD)),
+            Span::raw(" continue / open"),
+        ]),
+        Line::from(vec![
+            Span::styled("space", palette.accent.add_modifier(Modifier::BOLD)),
+            Span::raw(" toggle row"),
+        ]),
+        Line::from(vec![
+            Span::styled("y/n", palette.accent.add_modifier(Modifier::BOLD)),
+            Span::raw(" confirm popup"),
+        ]),
+    ])
+    .style(palette.foreground)
+    .block(
+        Block::default()
+            .title("Quick start")
+            .borders(Borders::LEFT | Borders::RIGHT)
+            .border_style(palette.accent)
+            .padding(Padding::horizontal(2)),
+    );
+    frame.render_widget(quick, chunks[1]);
+}
+
+fn render_content(frame: &mut Frame<'_>, area: Rect, app: &TuiApp, palette: Palette) {
+    let title = screen_title(app.screen);
+    let body = match app.screen {
+        Screen::SafeConfirmation => app.render_safe_selection(),
+        Screen::SessionConfirmation => app.render_session_browser(),
+        _ => app.render(),
+    };
+    let panel = Paragraph::new(body)
+        .style(palette.foreground)
+        .wrap(Wrap { trim: false })
+        .block(
+            Block::default()
+                .title(title)
+                .borders(Borders::ALL)
+                .border_style(palette.border)
+                .style(palette.panel)
+                .padding(Padding::new(3, 3, 1, 1)),
+        );
+    frame.render_widget(panel, centered_panel(area));
+}
+
+fn render_footer(frame: &mut Frame<'_>, area: Rect, app: &TuiApp, palette: Palette) {
+    let cwd = env::current_dir()
+        .ok()
+        .map_or_else(|| "cwd unknown".to_owned(), |path| display_path(&path));
+    let version = env!("CARGO_PKG_VERSION");
+    let footer = Paragraph::new(Line::from(vec![
+        Span::styled("cwd ", palette.accent.add_modifier(Modifier::BOLD)),
+        Span::styled(truncate(cwd, 58), palette.muted),
+        Span::raw("    "),
+        Span::styled("v", palette.muted),
+        Span::styled(version, palette.muted),
+        Span::raw("    "),
+        Span::styled(
+            if app.cli.no_color {
+                "no-color"
+            } else {
+                "color"
+            },
+            palette.muted,
+        ),
+    ]));
+    frame.render_widget(footer, area);
+}
+
+fn render_confirm_modal(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    palette: Palette,
+    title: &str,
+    lines: &[String],
+) {
+    let popup = centered_rect(56, 9, area);
+    frame.render_widget(Clear, popup);
+    let text = Paragraph::new(vec![
+        Line::from(Span::styled(
+            lines.first().map_or("Confirm?", String::as_str),
+            palette.foreground.add_modifier(Modifier::BOLD),
+        )),
+        Line::from(""),
+        Line::from(Span::styled(
+            lines.get(1).map_or("Press y or n.", String::as_str),
+            palette.muted,
+        )),
+        Line::from(""),
+        Line::from(vec![
+            Span::styled(" y ", palette.confirm_button),
+            Span::raw("  yes     "),
+            Span::styled(" n ", palette.cancel_button),
+            Span::raw("  no"),
+        ]),
+    ])
+    .alignment(Alignment::Center)
+    .block(
+        Block::default()
+            .title(title)
+            .borders(Borders::ALL)
+            .border_style(palette.accent)
+            .style(palette.modal)
+            .padding(Padding::new(2, 2, 1, 1)),
+    );
+    frame.render_widget(text, popup);
+}
+
+fn centered_panel(area: Rect) -> Rect {
+    let width = area.width.min(104);
+    let height = area.height.min(26);
+    centered_rect(width, height, area)
+}
+
+fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
+    let horizontal = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Min(0),
+            Constraint::Length(width.min(area.width)),
+            Constraint::Min(0),
+        ])
+        .split(area);
+    let vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Min(0),
+            Constraint::Length(height.min(area.height)),
+            Constraint::Min(0),
+        ])
+        .split(horizontal[1]);
+    vertical[1]
+}
+
+fn screen_title(screen: Screen) -> &'static str {
+    match screen {
+        Screen::Boot => "Discovery",
+        Screen::AppSelection => "App selection",
+        Screen::Analyze => "Analysis",
+        Screen::SafeSelection | Screen::SafeConfirmation => "Safe cleanup",
+        Screen::SafeExecution => "Cleaning safe items",
+        Screen::SessionOverview => "Session data",
+        Screen::SessionBrowser | Screen::SessionConfirmation => "Session browser",
+        Screen::SessionExecution => "Cleaning sessions",
+        Screen::FinalSummary => "Final summary",
+    }
+}
+
+#[derive(Clone, Copy)]
+struct Palette {
+    background: Style,
+    panel: Style,
+    modal: Style,
+    foreground: Style,
+    muted: Style,
+    accent: Style,
+    border: Style,
+    logo: Style,
+    confirm_button: Style,
+    cancel_button: Style,
+}
+
+impl Palette {
+    fn new(no_color: bool) -> Self {
+        if no_color {
+            return Self {
+                background: Style::default(),
+                panel: Style::default(),
+                modal: Style::default(),
+                foreground: Style::default(),
+                muted: Style::default(),
+                accent: Style::default(),
+                border: Style::default(),
+                logo: Style::default(),
+                confirm_button: Style::default().add_modifier(Modifier::REVERSED),
+                cancel_button: Style::default().add_modifier(Modifier::REVERSED),
+            };
+        }
+
+        Self {
+            background: Style::default().bg(Color::Rgb(9, 24, 34)),
+            panel: Style::default().bg(Color::Rgb(39, 37, 42)),
+            modal: Style::default()
+                .fg(Color::Rgb(232, 232, 232))
+                .bg(Color::Rgb(22, 23, 24)),
+            foreground: Style::default().fg(Color::Rgb(224, 226, 226)),
+            muted: Style::default().fg(Color::Rgb(170, 168, 172)),
+            accent: Style::default().fg(Color::Rgb(125, 221, 232)),
+            border: Style::default().fg(Color::Rgb(70, 67, 74)),
+            logo: Style::default().fg(Color::Rgb(190, 190, 188)),
+            confirm_button: Style::default()
+                .fg(Color::Rgb(19, 24, 26))
+                .bg(Color::Rgb(178, 232, 128))
+                .add_modifier(Modifier::BOLD),
+            cancel_button: Style::default()
+                .fg(Color::Rgb(232, 232, 232))
+                .bg(Color::Rgb(82, 78, 86)),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Screen {
+    Boot,
     AppSelection,
     Analyze,
     SafeSelection,
+    SafeConfirmation,
     SafeExecution,
     SessionOverview,
     SessionBrowser,
@@ -107,6 +407,8 @@ struct AppRow {
 
 struct TuiApp {
     cli: Cli,
+    config: VibeHaulerConfig,
+    ctx: PathContext,
     registry: AdapterRegistry,
     screen: Screen,
     app_rows: Vec<AppRow>,
@@ -118,7 +420,6 @@ struct TuiApp {
     session_cursor: usize,
     browser_app: Option<AppId>,
     session_selected: BTreeSet<usize>,
-    confirmation_input: String,
     safe_manifest: Option<CleanManifest>,
     session_manifest: Option<CleanManifest>,
     error: Option<String>,
@@ -138,31 +439,13 @@ impl TuiApp {
             PathContext::from_env()?
         };
         let registry = AdapterRegistry::v01();
-        let mut instances = registry.detect_all(&ctx)?;
-        instances.extend(user_root_instances(cli.roots.as_ref(), os)?);
-        instances.extend(config_root_instances(&config, os));
-        instances.sort_by(|left, right| {
-            left.app
-                .cmp(&right.app)
-                .then_with(|| left.root.cmp(&right.root))
-        });
-        instances.dedup_by(|left, right| left.app == right.app && left.root == right.root);
-
-        let app_rows = instances
-            .into_iter()
-            .filter(|instance| config.app_enabled(&instance.app))
-            .map(|instance| AppRow {
-                selected: true,
-                selectable: true,
-                instance,
-            })
-            .collect::<Vec<_>>();
-
         Ok(Self {
             cli,
+            config,
+            ctx,
             registry,
-            screen: Screen::AppSelection,
-            app_rows,
+            screen: Screen::Boot,
+            app_rows: Vec::new(),
             app_cursor: 0,
             inventory: Vec::new(),
             sessions: Vec::new(),
@@ -171,12 +454,35 @@ impl TuiApp {
             session_cursor: 0,
             browser_app: None,
             session_selected: BTreeSet::new(),
-            confirmation_input: String::new(),
             safe_manifest: None,
             session_manifest: None,
             error: None,
             should_quit: false,
         })
+    }
+
+    fn discover(&mut self) -> anyhow::Result<()> {
+        let mut instances = self.registry.detect_all(&self.ctx)?;
+        instances.extend(user_root_instances(self.cli.roots.as_ref(), self.ctx.os)?);
+        instances.extend(config_root_instances(&self.config, self.ctx.os));
+        instances.sort_by(|left, right| {
+            left.app
+                .cmp(&right.app)
+                .then_with(|| left.root.cmp(&right.root))
+        });
+        instances.dedup_by(|left, right| left.app == right.app && left.root == right.root);
+
+        self.app_rows = instances
+            .into_iter()
+            .filter(|instance| self.config.app_enabled(&instance.app))
+            .map(|instance| AppRow {
+                selected: true,
+                selectable: true,
+                instance,
+            })
+            .collect::<Vec<_>>();
+        self.screen = Screen::AppSelection;
+        Ok(())
     }
 
     fn handle_key(&mut self, key: KeyEvent) -> anyhow::Result<()> {
@@ -194,9 +500,12 @@ impl TuiApp {
         }
 
         match self.screen {
+            Screen::Boot | Screen::Analyze | Screen::SafeExecution | Screen::SessionExecution => {
+                Ok(())
+            }
             Screen::AppSelection => self.handle_app_selection(key),
-            Screen::Analyze | Screen::SafeExecution | Screen::SessionExecution => Ok(()),
             Screen::SafeSelection => self.handle_safe_selection(key),
+            Screen::SafeConfirmation => self.handle_safe_confirmation(key),
             Screen::SessionOverview => self.handle_session_overview(key),
             Screen::SessionBrowser => self.handle_session_browser(key),
             Screen::SessionConfirmation => self.handle_session_confirmation(key),
@@ -267,9 +576,26 @@ impl TuiApp {
                 }
             }
             KeyCode::Enter => {
+                if self.selected_safe_count() == 0 {
+                    self.screen = Screen::SessionOverview;
+                } else {
+                    self.screen = Screen::SafeConfirmation;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    fn handle_safe_confirmation(&mut self, key: KeyEvent) -> anyhow::Result<()> {
+        match key.code {
+            KeyCode::Char('y' | 'Y') => {
                 self.screen = Screen::SafeExecution;
                 self.execute_safe_cleanup()?;
                 self.screen = Screen::SessionOverview;
+            }
+            KeyCode::Char('n' | 'N') | KeyCode::Esc => {
+                self.screen = Screen::SafeSelection;
             }
             _ => {}
         }
@@ -317,7 +643,6 @@ impl TuiApp {
             }
             KeyCode::Enter => {
                 if self.selected_session_count() > 0 {
-                    self.confirmation_input.clear();
                     self.screen = Screen::SessionConfirmation;
                 } else {
                     self.error = Some("Select at least one session before cleanup.".to_owned());
@@ -330,22 +655,13 @@ impl TuiApp {
 
     fn handle_session_confirmation(&mut self, key: KeyEvent) -> anyhow::Result<()> {
         match key.code {
-            KeyCode::Esc => self.screen = Screen::SessionBrowser,
-            KeyCode::Backspace => {
-                self.confirmation_input.pop();
+            KeyCode::Char('y' | 'Y') => {
+                self.screen = Screen::SessionExecution;
+                self.execute_session_cleanup()?;
+                self.screen = Screen::FinalSummary;
             }
-            KeyCode::Char(ch) if ch.is_ascii_digit() => {
-                self.confirmation_input.push(ch);
-            }
-            KeyCode::Enter => {
-                if self.confirmation_input == self.selected_session_count().to_string() {
-                    self.screen = Screen::SessionExecution;
-                    self.execute_session_cleanup()?;
-                    self.screen = Screen::FinalSummary;
-                } else {
-                    self.error =
-                        Some("Typed confirmation did not match selected count.".to_owned());
-                }
+            KeyCode::Char('n' | 'N') | KeyCode::Esc => {
+                self.screen = Screen::SessionBrowser;
             }
             _ => {}
         }
@@ -474,11 +790,17 @@ impl TuiApp {
         self.session_selected.len()
     }
 
+    fn selected_safe_count(&self) -> usize {
+        self.safe_selected.iter().filter(|value| **value).count()
+    }
+
     fn render(&self) -> String {
         let mut output = match self.screen {
+            Screen::Boot => self.render_boot(),
             Screen::AppSelection => self.render_app_selection(),
             Screen::Analyze => self.render_analysis(),
             Screen::SafeSelection => self.render_safe_selection(),
+            Screen::SafeConfirmation => self.render_safe_confirmation(),
             Screen::SafeExecution => self.render_safe_execution(),
             Screen::SessionOverview => self.render_session_overview(),
             Screen::SessionBrowser => self.render_session_browser(),
@@ -491,6 +813,10 @@ impl TuiApp {
             output.push_str(error);
         }
         output
+    }
+
+    fn render_boot(&self) -> String {
+        "+-- VibeHauler -------------------------------- Local cleanup ----+\n| Finding local agent data...                                     |\n|                                                                |\n| Discovery is read-only. Press q after the next screen to quit.  |\n+-----------------------------------------------------------------+".to_owned()
     }
 
     fn render_app_selection(&self) -> String {
@@ -553,7 +879,7 @@ impl TuiApp {
                 format!(
                     "{} - {} files",
                     human_bytes(selected_bytes),
-                    selected_count(&self.safe_selected)
+                    self.selected_safe_count()
                 )
             ),
             "+----+--------------------------+-------------+--------+----------+".to_owned(),
@@ -587,10 +913,17 @@ impl TuiApp {
                 "| Protected: {:<53} |",
                 format!("{} Red/Black items are report-only", self.protected_items())
             ),
-            "| Enter Clean selected - Space Toggle - q Quit                    |".to_owned(),
+            "| Enter Review cleanup - Space Toggle - q Quit                    |".to_owned(),
             "+-----------------------------------------------------------------+".to_owned(),
         ]);
         lines.join("\n")
+    }
+
+    fn render_safe_confirmation(&self) -> String {
+        format!(
+            "+-- Confirm safe cleanup -----------------------------------------+\n| Move {} selected Green items to managed Trash?                  |\n| Press y to clean or n to cancel.                                |\n+-----------------------------------------------------------------+",
+            self.selected_safe_count()
+        )
     }
 
     fn render_safe_execution(&self) -> String {
@@ -711,9 +1044,8 @@ impl TuiApp {
 
     fn render_session_confirmation(&self) -> String {
         format!(
-            "+-- Confirm session cleanup --------------------------------------+\n| Selected Yellow sessions: {:<38} |\n| Type the selected count to confirm: {:<29} |\n| Backup is required before Trash. Esc cancels.                    |\n+-----------------------------------------------------------------+",
-            self.selected_session_count(),
-            self.confirmation_input
+            "+-- Confirm session cleanup --------------------------------------+\n| Back up and move {} selected Yellow sessions to Trash?          |\n| Press y to continue or n to cancel.                             |\n+-----------------------------------------------------------------+",
+            self.selected_session_count()
         )
     }
 
@@ -748,10 +1080,6 @@ fn next_cursor(current: usize, len: usize) -> usize {
 
 fn prev_cursor(current: usize, _len: usize) -> usize {
     current.saturating_sub(1)
-}
-
-fn selected_count(values: &[bool]) -> usize {
-    values.iter().filter(|value| **value).count()
 }
 
 fn truncate(value: impl AsRef<str>, max: usize) -> String {

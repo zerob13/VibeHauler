@@ -224,7 +224,7 @@ impl StandardRootResolver {
                 }
             }
             AppId::Aider => {
-                roots.extend(find_aider_repos(ctx, 8));
+                roots.extend(find_aider_repos(ctx));
             }
             _ => {}
         }
@@ -276,12 +276,52 @@ fn push(
     });
 }
 
-fn find_aider_repos(ctx: &PathContext, max_depth: usize) -> Vec<CandidateRoot> {
-    WalkDir::new(&ctx.home)
+fn find_aider_repos(ctx: &PathContext) -> Vec<CandidateRoot> {
+    let scan_roots = aider_scan_roots(ctx);
+    let mut roots = scan_roots
+        .iter()
+        .flat_map(|root| scan_aider_root(root, ctx, aider_scan_depth(ctx)))
+        .collect::<Vec<_>>();
+    roots.sort_by(|left, right| left.path.cmp(&right.path));
+    roots.dedup_by(|left, right| left.path == right.path);
+    roots
+}
+
+fn aider_scan_roots(ctx: &PathContext) -> Vec<PathBuf> {
+    if ctx.portable_root.is_some() {
+        return vec![ctx.home.clone()];
+    }
+
+    let mut roots = env::current_dir().ok().into_iter().collect::<Vec<_>>();
+    roots.extend(
+        [
+            "work",
+            "workspace",
+            "Documents/workspace",
+            "Code",
+            "Projects",
+            "src",
+            "dev",
+        ]
+        .into_iter()
+        .map(|child| ctx.home.join(child)),
+    );
+    roots.retain(|path| path.exists());
+    roots.sort();
+    roots.dedup();
+    roots
+}
+
+fn aider_scan_depth(ctx: &PathContext) -> usize {
+    if ctx.portable_root.is_some() { 8 } else { 5 }
+}
+
+fn scan_aider_root(root: &Path, ctx: &PathContext, max_depth: usize) -> Vec<CandidateRoot> {
+    WalkDir::new(root)
         .follow_links(false)
         .max_depth(max_depth)
         .into_iter()
-        .filter_entry(|entry| !is_hidden_dir(entry.path(), &ctx.home))
+        .filter_entry(|entry| !is_skipped_dir(entry.path(), &ctx.home))
         .filter_map(Result::ok)
         .filter(|entry| entry.file_type().is_file())
         .filter_map(|entry| {
@@ -303,15 +343,25 @@ fn find_aider_repos(ctx: &PathContext, max_depth: usize) -> Vec<CandidateRoot> {
         .collect::<Vec<_>>()
 }
 
-fn is_hidden_dir(path: &Path, home: &Path) -> bool {
-    path != home
-        && path.is_dir()
-        && path
-            .file_name()
-            .is_some_and(|name| name.to_string_lossy().starts_with('.'))
-        && path
-            .file_name()
-            .is_none_or(|name| name != ".config" && name != ".local")
+fn is_skipped_dir(path: &Path, home: &Path) -> bool {
+    if path == home || !path.is_dir() {
+        return false;
+    }
+    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    matches!(
+        name,
+        ".git"
+            | "node_modules"
+            | "target"
+            | ".vibe-hauler"
+            | "Library"
+            | "AppData"
+            | ".cache"
+            | ".cargo"
+            | ".rustup"
+    ) || (name.starts_with('.') && name != ".config" && name != ".local")
 }
 
 #[cfg(test)]
