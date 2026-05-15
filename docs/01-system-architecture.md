@@ -31,7 +31,7 @@ flowchart TD
 
 | Layer | Responsibility | Must Not Do |
 |---|---|---|
-| CLI | parse args, format output, ask confirmations | parse app data directly |
+| CLI | parse startup flags, render TUI, ask confirmations | parse app data directly |
 | Config | load defaults and user config | mutate cleanup targets |
 | Discovery | find roots and app instances | classify cleanup risk alone |
 | Adapters | app-specific inventory and session extraction | delete files |
@@ -78,7 +78,7 @@ vibe-hauler-core
 4. `CleanManifest` is generated after mutation and is the source of truth for restore.
 5. `RiskLevel` is assigned by rules plus adapter evidence; adapters can recommend, but the core engine normalizes.
 6. Paths are always represented as absolute normalized paths internally, with display shortening only at the CLI boundary.
-7. Mutating commands must require a plan or create one as an explicit dry-run artifact first.
+7. Mutating TUI actions must be backed by a generated plan before execution.
 
 ## Filesystem-first Design
 
@@ -95,7 +95,7 @@ Local filesystem
   -> user-provided backup/export JSON
 ```
 
-External SDKs and upstream CLIs are research inputs only. They may be used to generate fixtures or understand schemas, but `vhaul scan` must not require them.
+External SDKs and upstream CLIs are research inputs only. They may be used to generate fixtures or understand schemas, but the `vhaul` TUI must not require them.
 
 ## Error Strategy
 
@@ -108,4 +108,3 @@ External SDKs and upstream CLIs are research inputs only. They may be used to ge
 | Missing timestamp | fallback to metadata mtime |
 | Missing cwd | fallback to encoded paths, workspace metadata, or unknown |
 | Permission denied | mark Black, do not retry destructively |
-

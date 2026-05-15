@@ -39,7 +39,7 @@ backup_before_delete = true
 local_only = true
 show_raw_preview = false
 
-[scan]
+[discovery]
 follow_symlinks = false
 max_depth = 8
 include_windows_home_from_wsl = false
@@ -77,7 +77,7 @@ Config validation should reject:
 - non-existent custom roots unless explicitly allowed;
 - `follow_symlinks = true` without warning state;
 - advanced cleanup enabled for unsupported apps;
-- raw previews enabled in global config without a warning in `doctor`.
+- raw previews enabled in global config without a warning in the TUI.
 
 ## Testing
 
@@ -85,4 +85,3 @@ Config validation should reject:
 - merge CLI over file;
 - platform path tests;
 - invalid TOML errors with helpful messages.
-

@@ -2,11 +2,11 @@
 
 A local-first cleaner for AI agent clients.
 
-VibeHauler scans Claude Code, Codex, Cursor, Cherry Studio, Alma, DeepChat, OpenCode, and more. It is designed to review sessions, inspect disk usage, and clean safely.
+VibeHauler opens a terminal UI for Claude Code, Codex, Cursor, Cherry Studio, Alma, DeepChat, OpenCode, and more. It is designed to review sessions, inspect disk usage, and clean safely.
 
 ## Status
 
-This repository is currently a scaffold. The project structure, module boundaries, and documentation are in place; scanner, parser, and cleaner logic will be implemented after the contracts settle.
+This repository is currently a scaffold. The project structure, module boundaries, and documentation are in place; discovery, parser, and cleaner logic will be implemented after the contracts settle.
 
 ## Naming
 
@@ -39,10 +39,9 @@ crates/
 cargo fmt --all
 cargo clippy --workspace --all-targets --all-features
 cargo test --workspace --all-features
-cargo run -p vibe-hauler -- --help
+cargo run -p vibe-hauler --
 ```
 
 ## Documentation
 
 Start with [docs/README.md](docs/README.md).
-

@@ -4,7 +4,7 @@ Goal:
 
 ```bash
 npm install -g vibe-hauler
-vhaul scan
+vhaul
 ```
 
 The npm package is a distribution wrapper for the Rust binary, not a Node rewrite.
@@ -47,6 +47,10 @@ The wrapper uses `optionalDependencies` to install the right native package.
   "version": "0.1.0",
   "description": "A local-first cleaner for AI agent clients.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zerob13/VibeHauler.git"
+  },
   "bin": {
     "vhaul": "bin/vhaul.js"
   },
@@ -74,6 +78,10 @@ Example:
   "version": "0.1.0",
   "description": "VibeHauler native binary for macOS arm64",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zerob13/VibeHauler.git"
+  },
   "os": ["darwin"],
   "cpu": ["arm64"],
   "files": [
@@ -118,7 +126,7 @@ Each package needs its own trusted publisher configuration on npm.
 ```bash
 npm install -g vibe-hauler
 vhaul --version
-vhaul doctor
+vhaul --help
 ```
 
 ## Versioning
@@ -138,4 +146,3 @@ Homebrew:       v0.1.0
 - [npm package.json `bin`](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#bin)
 - [npm publish](https://docs.npmjs.com/cli/v10/commands/npm-publish/)
 - [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)
-

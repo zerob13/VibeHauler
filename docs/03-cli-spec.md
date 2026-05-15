@@ -1,98 +1,69 @@
 # CLI Spec
 
-The CLI binary is `vhaul`.
+The installed binary is `vhaul`.
 
-Every command must be useful in a terminal, scriptable with JSON, and safe by default.
+`vhaul` is a TUI-first application: running the binary opens the interactive cleanup interface. Discovery, analysis, session review, cleanup confirmation, and restore guidance happen inside that interface instead of through public subcommands.
 
 ## Command Map
 
 ```bash
-vhaul scan
-vhaul scan --apps claude,codex,opencode --json
-vhaul scan --roots cursor="/Users/me/Library/Application Support/Cursor/User"
-vhaul scan --portable-root ./fixtures/macos-home
-
-vhaul sessions list
-vhaul sessions list --app claude --since 30d --sort size
-vhaul sessions list --cwd ~/work/my-repo
-vhaul sessions show <session-id> --format markdown
-vhaul sessions export <session-id> --format jsonl --output ./session.jsonl
-
-vhaul plan --safe
-vhaul plan --include-yellow --older-than 90d --apps claude,codex,aider
-vhaul clean --plan .vhaul/plans/plan.json --dry-run
-vhaul clean --plan .vhaul/plans/plan.json --execute --safe-only
-
-vhaul restore .vhaul/manifests/20260515-231722.json
-vhaul doctor
-vhaul completion zsh
+vhaul
+vhaul --help
+vhaul --version
 ```
 
-## Global Flags
+There are no public operational subcommands in the product surface. Discovery, session browsing, planning, and cleanup are internal workflow states owned by the TUI.
+
+## Startup Flags
+
+Startup flags configure the TUI before it opens. They do not execute cleanup by themselves.
 
 | Flag | Meaning |
 |---|---|
 | `--config <path>` | use a specific config file |
-| `--json` | emit machine-readable JSON |
-| `--no-color` | disable ANSI colors |
-| `--verbose` | more diagnostic output |
-| `--quiet` | suppress nonessential text |
-| `--portable-root <path>` | treat path as fake home for fixtures/tests |
-| `--roots app=path,...` | add or override app roots |
-| `--apps a,b,c` | restrict adapters |
+| `--no-color` | disable ANSI color while keeping the TUI layout usable |
+| `--portable-root <path>` | treat path as a fake home for fixtures/tests |
+| `--roots app=path,...` | add or override app roots before discovery |
 
 ## UX Rules
 
-1. `scan`, `sessions list`, `plan`, and `doctor` are read-only.
-2. `clean` defaults to dry-run unless `--execute` is passed.
-3. `--execute` requires either `--safe-only` or an explicit plan that includes Yellow selections.
-4. Yellow actions require backup unless the user passes a future dangerous override.
-5. Red and Black actions are skipped by default and must be shown with reasons.
-6. Any raw session preview requires a second confirmation or `--raw`.
-7. JSON output must contain the same IDs as table output.
+1. `vhaul` opens the TUI when running in a terminal.
+2. The initial discovery pass is internal and read-only.
+3. Detected readable apps are selected by default on the app selection screen.
+4. Green cleanup candidates are selected by default.
+5. Yellow session/history items are never selected by default.
+6. Red and Black items are shown only as protected/report-only.
+7. Session deletion requires backup and typed confirmation.
+8. Raw previews require a separate opt-in confirmation.
+9. Every mutation writes a manifest and displays restore guidance.
+10. Permanent deletion is not part of the default TUI.
 
-## Output Examples
+The full screen flow is specified in [Interactive Cleanup Flow](./06-interactive-cleanup-flow.md).
 
-```txt
-$ vhaul scan
-
-VibeHauler Scan
-Local only · dry-run · built-in parsers · 12 adapters
-
-App            Root             Size      Candidates  Recommendation
-Claude Code    ~/.claude        3.42 GB   184         1.87 GB cleanable
-Codex          ~/.codex         1.18 GB   92          622 MB cleanable
-Cursor         App Support      11.6 GB   9           backup + vacuum plan
-Cherry Studio  App Support      2.24 GB   17          trace/cache only
-
-Green   2.9 GB  cache/log/tmp
-Yellow  4.1 GB  old sessions/trace/checkpoints
-Red     6.8 GB  credentials/config/memory/databases
-Black   0.4 GB  locked or unknown
-```
+## Startup Example
 
 ```txt
-$ vhaul clean --plan .vhaul/plans/20260515.json --execute --safe-only
+$ vhaul
 
-Plan summary
-  Green   1.42 GB  93 files
-  Yellow  skipped
-  Red     protected
-
-Destination: OS Trash
-Manifest:    ~/.local/share/vibe-hauler/manifests/20260515-231722.json
-
-Type CLEAN to continue: _
++-- VibeHauler -------------------------------- Local cleanup ----+
+| Finding local agent data...                                     |
+|                                                                 |
+| [ok] Claude Code    ~/.claude                                   |
+| [ok] Codex          ~/.codex                                    |
+| [ok] Cursor         ~/Library/Application Support/Cursor         |
+| [--] OpenCode       not found                                   |
++-----------------------------------------------------------------+
 ```
+
+The next screen is app selection. The user continues through the workflow using keyboard controls inside the TUI.
 
 ## Exit Codes
 
 | Code | Meaning |
 |---:|---|
-| 0 | success |
+| 0 | success or user quit without changes |
 | 1 | general error |
-| 2 | invalid arguments/config |
-| 3 | partial scan failure, report still emitted |
+| 2 | invalid startup flags/config |
+| 3 | partial discovery or analysis failure, report still shown |
 | 4 | cleanup aborted by safety check |
-| 5 | restore failed |
-
+| 5 | restore guidance or manifest write failed |

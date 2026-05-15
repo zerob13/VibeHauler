@@ -55,15 +55,16 @@ User-provided roots should not skip safety checks; they only affect discovery co
 
 ## WSL Strategy
 
-Default: treat WSL as Linux and scan Linux paths only.
+Default: treat WSL as Linux and discover Linux paths only.
 
 Optional:
 
-```bash
-vhaul scan --include-windows-home
+```toml
+[discovery]
+include_windows_home_from_wsl = true
 ```
 
-When enabled, scan `/mnt/c/Users/<name>` candidates and mark them as `windows-from-wsl`. Cleanup defaults to dry-run for these roots.
+When enabled, discover `/mnt/c/Users/<name>` candidates and mark them as `windows-from-wsl`. Cleanup defaults to read-only review for these roots.
 
 ## Testing
 
@@ -77,4 +78,3 @@ fixtures/wsl-home/
 ```
 
 Tests must override `HOME`, XDG dirs, and Windows env vars with fixture paths.
-

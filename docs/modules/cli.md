@@ -5,94 +5,112 @@ Binary: `vhaul`
 
 ## Responsibility
 
-The CLI module owns terminal UX:
+The CLI module owns the terminal application shell:
 
-- parse commands and flags with `clap`;
-- load config;
-- call discovery/adapters/core/cleaner in order;
-- format human tables and JSON output;
+- parse startup flags with `clap`;
+- launch the TUI;
+- load config and root overrides;
+- call discovery/adapters/core/cleaner in the TUI workflow order;
+- render interactive lists, detail panels, confirmations, and summaries;
 - ask typed confirmations before mutation;
-- expose shell completions and manpages.
+- display manifest and restore guidance after cleanup.
 
 It must not parse app data directly and must not delete files directly.
 
-## Public Commands
+## Public Command
 
 ```txt
-vhaul scan
-vhaul sessions list
-vhaul sessions show
-vhaul sessions export
-vhaul plan
-vhaul clean
-vhaul restore
-vhaul doctor
-vhaul completion
+vhaul
 ```
+
+`vhaul` is the product surface. Discovery, session review, planning, cleanup, and restore guidance are TUI states, not public subcommands.
+
+## Startup Flags
+
+```txt
+vhaul --config <path>
+vhaul --no-color
+vhaul --portable-root fixtures/macos-home
+vhaul --roots claude=/tmp/home/.claude,codex=/tmp/home/.codex
+```
+
+These flags prepare the TUI environment. They never execute cleanup on their own.
 
 ## Implementation Slices
 
-### Slice 1: command skeleton
+### Slice 1: startup shell
 
-- Define `Cli`, `Commands`, and per-command args.
-- Wire `--json`, `--config`, `--apps`, `--roots`, `--portable-root`.
-- Print help, version, and shell completions.
+- Define `Cli` and startup flags.
+- Print help and version.
+- Launch a placeholder TUI shell for `vhaul`.
 
 Acceptance:
 
 ```bash
 cargo run -p vibe-hauler -- --help
-cargo run -p vibe-hauler -- scan --help
-cargo run -p vibe-hauler -- completion zsh
+cargo run -p vibe-hauler --
+cargo run -p vibe-hauler -- --portable-root fixtures/macos-home
 ```
 
-### Slice 2: read-only command pipeline
+### Slice 2: discovery and app selection
 
-- `scan` calls config, discovery, adapters, risk summary.
-- `sessions list` calls adapters and parser registry.
-- `doctor` reports config paths, enabled adapters, platform, and feature support.
+- The TUI starts with read-only discovery.
+- Detected readable apps are selected by default.
+- Users can select all, clear all, search, and toggle rows.
 
 Acceptance:
 
-```bash
-vhaul scan --portable-root fixtures/macos-home --json
-vhaul sessions list --portable-root fixtures/macos-home --app claude
+```txt
+Given fixture roots, opening `vhaul --portable-root fixtures/macos-home`
+shows Claude Code and Codex selected in the app selection screen.
 ```
 
-### Slice 3: plan and clean
+### Slice 3: safe cleanup
 
-- `plan` writes a plan file under `.vhaul/plans/` or configured data dir.
-- `clean --dry-run` renders what would happen.
-- `clean --execute` requires typed confirmation.
+- Analyze selected apps after the user presses Enter.
+- Show Green cleanup candidates selected by default.
+- Execute selected Green actions only after the user confirms in the TUI.
+- Write a manifest for every mutation.
 
 Acceptance:
 
-```bash
-vhaul plan --safe --portable-root fixtures/macos-home
-vhaul clean --plan .vhaul/plans/example.json --dry-run
+```txt
+The safe cleanup screen shows Green rows only, skips changed paths,
+and reports Trash/quarantine destinations in the final summary.
+```
+
+### Slice 4: session review
+
+- Show Yellow session/history data after safe cleanup.
+- Let users enter each agent, preview redacted session metadata, and select sessions manually.
+- Support quick selection by time and directory.
+- Require backup and typed confirmation before session cleanup.
+
+Acceptance:
+
+```txt
+No session is selected by default, and cleanup cannot proceed unless
+backup succeeds and the typed confirmation matches the selected count.
 ```
 
 ## Output Rules
 
-Human output:
+TUI output:
 
-- default to compact tables;
-- show risk totals;
-- show why Red/Black items are skipped;
-- truncate long paths with home-relative display.
+- use stable ASCII layout for fixtures and snapshots;
+- keep color optional and never required for meaning;
+- show risk totals and protected reasons;
+- truncate long paths with home-relative display;
+- keep raw session previews opt-in.
 
-JSON output:
+Test output:
 
-- stable schema;
-- full IDs;
-- absolute paths;
-- no ANSI;
-- include warnings and partial failures.
+- expose internal state through fixture harnesses, not user-facing subcommands;
+- snapshot the TUI screens for app selection, safe cleanup, session review, and final summary.
 
 ## Testing
 
-- `assert_cmd` for command behavior.
-- `insta` snapshots for table and JSON output.
-- one fixture test per supported OS layout.
+- `assert_cmd` for startup flags, help, and version.
+- snapshot tests for rendered TUI screens.
+- fixture tests for supported OS layouts.
 - no test should touch the real home directory.
-

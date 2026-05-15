@@ -70,7 +70,7 @@ Recommended flags:
 | `sqlite` | yes | SQLite readonly/introspection |
 | `leveldb` | yes | LevelDB/localStorage parsing |
 | `indexeddb-subset` | yes | bounded IndexedDB/V8 subset scanner |
-| `tui` | no | future ratatui interface |
+| `tui` | yes | interactive terminal interface |
 | `vendored-sqlite` | yes for release | predictable cross-platform builds |
 | `native-tls` | no | should not be needed for local-first v0.1 |
 
@@ -82,8 +82,7 @@ Recommended development commands once code exists:
 cargo fmt --all
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-features
-cargo run -p vibe-hauler -- scan --dry-run
+cargo run -p vibe-hauler --
 ```
 
 Release commands should live in `xtask` or CI, not in ad hoc shell snippets.
-

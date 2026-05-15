@@ -46,8 +46,7 @@ flowchart LR
 6. Scan inventory and risk report.
 7. Plan builder.
 8. Cleaner dry-run, backup, trash, manifest, restore.
-9. SQLite/LevelDB protective scans for desktop clients.
+9. SQLite/LevelDB protective reads for desktop clients.
 10. Release packaging.
 
 The first implementation milestone should be intentionally boring: parse flags, discover fixture roots, and print deterministic reports.
-

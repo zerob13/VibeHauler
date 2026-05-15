@@ -51,7 +51,7 @@ Backups should store:
 
 ## Manifest Policy
 
-The manifest is append-only for execution results. It should include enough data to restore without rescanning.
+The manifest is append-only for execution results. It should include enough data to restore without fresh discovery.
 
 ```json
 {
@@ -102,4 +102,3 @@ For v0.1, SQLite compaction is plan-only. Future execution must:
 - restore refuses overwrite by default;
 - manifest snapshot;
 - symlink escape rejection.
-

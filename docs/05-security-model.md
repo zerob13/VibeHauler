@@ -6,7 +6,7 @@ VibeHauler handles local data that can contain secrets, credentials, personal me
 
 1. Read-only commands never mutate files.
 2. `clean` defaults to dry-run.
-3. Red and Black items are never cleaned by `--safe-only`.
+3. Red and Black items are never selectable in safe cleanup.
 4. Yellow items require backup before cleanup.
 5. OS Trash is preferred over permanent deletion.
 6. Every mutation writes a manifest.
@@ -56,7 +56,7 @@ logs/
 
 ## Preflight Checks
 
-Before `--execute`:
+Before TUI execution:
 
 1. Confirm selected actions match the saved plan.
 2. Re-stat each source path and compare expected size/mtime/hash policy.
@@ -75,4 +75,3 @@ Restore should:
 - verify backup hash before restoring;
 - record restore outcome in the manifest or a sibling restore report;
 - never infer missing paths from current scan state.
-

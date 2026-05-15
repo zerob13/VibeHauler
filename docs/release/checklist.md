@@ -52,7 +52,7 @@ man/
 - Run formula install locally.
 - Run formula test.
 - Run formula audit.
-- Push or PR to tap.
+- Push or PR to `zerob13/homebrew-tap`.
 
 ## npm
 
@@ -66,17 +66,15 @@ man/
 
 ```bash
 vhaul --version
-vhaul doctor
-vhaul scan --portable-root fixtures/macos-home
-vhaul sessions list --portable-root fixtures/macos-home --json
-vhaul plan --safe --portable-root fixtures/macos-home
+vhaul --help
 ```
+
+Manual release smoke should also open `vhaul` in a real terminal and complete a read-only fixture walkthrough. Automated fixture smoke tests should drive the TUI harness directly rather than relying on public subcommands.
 
 ## After Release
 
 - Verify GitHub Release assets download.
-- Verify `brew install vibehauler/tap/vibe-hauler`.
+- Verify `brew install zerob13/tap/vibe-hauler`.
 - Verify `npm install -g vibe-hauler`.
 - Create a short release note with risks and known limitations.
 - Open issues for any parser limitations discovered during smoke tests.
-

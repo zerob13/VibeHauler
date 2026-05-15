@@ -12,7 +12,7 @@ The fixture system needs to cover:
 - cross-platform path discovery;
 - parser behavior;
 - risk classification;
-- dry-run immutability;
+- pre-execution immutability;
 - backup/trash/restore;
 - locked DB and malformed data.
 
@@ -44,8 +44,8 @@ fixtures/
 | Type | Purpose |
 |---|---|
 | Unit | path helpers, parser functions, redaction, risk rules |
-| Snapshot | table output, JSON output, plan/manifest JSON |
-| Integration | CLI against fixture homes |
+| Snapshot | TUI screens, plan/manifest JSON |
+| Integration | TUI startup against fixture homes |
 | Mutation | backup, trash/quarantine, restore |
 | Cross-platform | Windows paths, WSL, XDG, symlinks |
 | Regression | real anonymized schema samples |
@@ -54,7 +54,7 @@ fixtures/
 
 | Area | Required Tests |
 |---|---|
-| CLI | help, scan JSON, sessions list, plan dry-run |
+| CLI/TUI | help, version, app selection, safe cleanup screen |
 | Discovery | macOS/Linux/Windows fixture roots |
 | Claude | JSONL parse with unknown event |
 | Codex | history and sessions path parse |
@@ -69,11 +69,10 @@ fixtures/
 
 Use snapshots for:
 
-- `scan --json`;
-- `sessions list --json`;
-- `plan --safe --json`;
+- app selection screen;
+- safe cleanup screen;
+- session browser screen;
 - parser outputs;
 - manifest outputs.
 
 Snapshots should avoid absolute machine paths by using fixture path normalization.
-

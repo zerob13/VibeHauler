@@ -7,7 +7,7 @@ VibeHauler is the polished English abstraction of “vibe 垃圾车”: it hauls
 Taglines:
 
 - Primary: Haul away your agent clutter.
-- Technical: Scan, inspect, and clean local agent residue.
+- Technical: Inspect and clean local agent residue in one terminal UI.
 
 One-line description:
 
@@ -15,7 +15,7 @@ One-line description:
 
 Product description:
 
-> VibeHauler scans local AI agent data, explains what is safe to remove, and helps users clean sessions, caches, logs, traces, and stale workspace state across Claude Code, Codex, Cursor, Cherry Studio, Alma, DeepChat, OpenCode, and more.
+> VibeHauler opens a local terminal UI that finds AI agent data, explains what is safe to remove, and helps users clean sessions, caches, logs, traces, and stale workspace state across Claude Code, Codex, Cursor, Cherry Studio, Alma, DeepChat, OpenCode, and more.
 
 ## Users
 
@@ -35,7 +35,7 @@ Secondary users:
 
 1. Local-first: no cloud service, no telemetry by default, no remote parsing.
 2. Explain before cleaning: every recommendation needs a reason and risk level.
-3. Default dry-run: scans and plans are safe by default.
+3. No silent cleanup: discovery and analysis are read-only, and every mutation requires interactive confirmation.
 4. Built-in parsers first: runtime should inspect local files directly instead of shelling out to upstream SDKs.
 5. Protect credentials and memory: auth, config, rules, skills, long-term memory, provider secrets, and keychain references are Red by default.
 6. Prefer reversible cleanup: OS Trash first, backup for Yellow items, manifest for every mutation.
@@ -45,18 +45,13 @@ Secondary users:
 
 The first working release should ship as a Rust CLI named `vhaul`.
 
-Required commands:
+Required command:
 
 ```bash
-vhaul scan
-vhaul sessions list
-vhaul sessions show <session-id>
-vhaul plan --safe
-vhaul clean --dry-run
-vhaul clean --execute --safe-only
-vhaul restore <manifest>
-vhaul doctor
+vhaul
 ```
+
+The TUI owns app discovery, app selection, safe cleanup, session review, confirmation, manifest display, and restore guidance. There are no public operational subcommands in the MVP.
 
 MVP adapters:
 
@@ -65,7 +60,7 @@ MVP adapters:
 | Claude Code | yes | yes | JSONL | logs/cache/tmp |
 | Codex | yes | yes | JSONL/history | logs/cache/tmp |
 | Gemini CLI | yes | yes | JSON/JSONL | logs/cache/tmp |
-| Aider | repo scan | yes | Markdown/history | selected history only |
+| Aider | repo discovery | yes | Markdown/history | selected history only |
 | OpenCode | yes | yes | sniffed JSON/JSONL | logs/cache/tmp |
 | Cursor | yes | yes | key-family preview | cache/log only |
 | Cherry Studio | yes | yes | backup/partial | trace/cache/log only |
@@ -78,15 +73,15 @@ MVP adapters:
 
 | Level | Meaning | Default Behavior |
 |---|---|---|
-| Green | Cache, old logs, tmp files, rebuildable indexes | eligible for `--safe-only` |
-| Yellow | Sessions, transcripts, checkpoints, workspace history | visible in plan, requires explicit selection or backup |
+| Green | Cache, old logs, tmp files, rebuildable indexes | selected by default in safe cleanup |
+| Yellow | Sessions, transcripts, checkpoints, workspace history | visible in session review, requires explicit selection and backup |
 | Red | Credentials, config, memory, rules, skills, core DBs | protected |
 | Black | Locked, unknown, permission denied, unsafe path | report only |
 
 ## Non-goals for v0.1
 
 - No background daemon.
-- No GUI or TUI yet.
+- No GUI yet.
 - No cloud sync.
 - No permanent delete by default.
 - No automatic SQLite replacement for Cursor/Cherry/DeepChat/Alma; advanced plans can be generated, but execution comes later.
@@ -96,8 +91,7 @@ MVP adapters:
 
 | Version | Theme | Deliverable |
 |---|---|---|
-| v0.1 | Safe scanner and cleaner | CLI, scan, sessions, plan, safe clean, restore |
+| v0.1 | TUI safe cleaner | one-command TUI, app selection, Green cleanup, session review, manifests |
 | v0.2 | Parser depth | Goose, DeepChat, Cursor, Cherry parser improvements |
-| v0.3 | TUI | interactive multi-select cleanup and preview |
+| v0.3 | Session control | richer previews, export/archive, restore browser |
 | v1.0 | Agent data control center | export, archive, privacy report, richer adapter registry |
-
