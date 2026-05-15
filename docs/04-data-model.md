@@ -2,6 +2,8 @@
 
 This document defines shared structures used across modules. Field names are Rust-oriented but should map cleanly to JSON output.
 
+Timestamps are represented as RFC3339 strings in the current contracts. A future implementation may wrap them in a stronger time type at module boundaries.
+
 ## App Identity
 
 ```rust
@@ -22,12 +24,30 @@ pub enum AppId {
 }
 ```
 
+Display names are UI labels and may contain spaces. `AppId` variants are code identifiers and must stay stable.
+
+| AppId | Display Name |
+|---|---|
+| `Claude` | Claude Code |
+| `Codex` | Codex |
+| `OpenCode` | OpenCode |
+| `Cursor` | Cursor |
+| `CherryStudio` | Cherry Studio |
+| `DeepChat` | DeepChat |
+| `Gemini` | Gemini CLI |
+| `Goose` | Goose |
+| `Aider` | Aider |
+| `Alma` | Alma |
+| `FactoryDroid` | Factory Droid |
+| `CopilotCli` | Copilot CLI |
+
 ## AppInstance
 
 Represents one detected installation or data root.
 
 ```rust
 pub struct AppInstance {
+    pub id: InstanceId,
     pub app: AppId,
     pub display_name: String,
     pub root: PathBuf,
@@ -50,7 +70,7 @@ pub struct InventoryItem {
     pub path: PathBuf,
     pub kind: ItemKind,
     pub size_bytes: u64,
-    pub modified_at: Option<OffsetDateTime>,
+    pub modified_at: Option<String>,
     pub risk: RiskLevel,
     pub recommendation: Recommendation,
     pub reason: String,
@@ -70,8 +90,8 @@ pub struct AgentSession {
     pub app: AppId,
     pub title: Option<String>,
     pub cwd: Option<PathBuf>,
-    pub started_at: Option<OffsetDateTime>,
-    pub updated_at: Option<OffsetDateTime>,
+    pub started_at: Option<String>,
+    pub updated_at: Option<String>,
     pub turns: Option<u32>,
     pub tokens: Option<TokenUsage>,
     pub files: Vec<PathBuf>,
@@ -84,6 +104,24 @@ pub struct AgentSession {
 }
 ```
 
+Supporting session types:
+
+```rust
+pub struct TokenUsage {
+    pub input: Option<u64>,
+    pub output: Option<u64>,
+    pub total: Option<u64>,
+}
+
+pub enum SessionSource {
+    File(PathBuf),
+    Directory(PathBuf),
+    Database(PathBuf),
+    Backup(PathBuf),
+    Unknown,
+}
+```
+
 ## CleanPlan
 
 Generated before mutation.
@@ -91,13 +129,52 @@ Generated before mutation.
 ```rust
 pub struct CleanPlan {
     pub id: PlanId,
-    pub created_at: OffsetDateTime,
+    pub created_at: String,
     pub version: String,
     pub platform: OsKind,
     pub mode: PlanMode,
     pub actions: Vec<PlannedAction>,
     pub totals: PlanTotals,
     pub warnings: Vec<PlanWarning>,
+}
+```
+
+Supporting plan types:
+
+```rust
+pub enum PlanMode {
+    SafeCleanup,
+    SessionCleanup,
+}
+
+pub struct PlanTotals {
+    pub actions: u64,
+    pub files: u64,
+    pub bytes: u64,
+    pub green: u64,
+    pub yellow: u64,
+}
+
+pub struct PlanWarning {
+    pub code: String,
+    pub message: String,
+}
+
+pub struct PlannedAction {
+    pub app: AppId,
+    pub kind: ActionKind,
+    pub path: PathBuf,
+    pub risk: RiskLevel,
+    pub size_bytes: u64,
+    pub backup_required: bool,
+    pub reason: String,
+}
+
+pub enum ActionKind {
+    Trash,
+    BackupAndTrash,
+    Quarantine,
+    ReportOnly,
 }
 ```
 
@@ -111,7 +188,7 @@ Generated after mutation.
 pub struct CleanManifest {
     pub id: ManifestId,
     pub plan_id: PlanId,
-    pub created_at: OffsetDateTime,
+    pub created_at: String,
     pub platform: OsKind,
     pub actions: Vec<ExecutedAction>,
     pub restore_state: RestoreState,
@@ -119,6 +196,35 @@ pub struct CleanManifest {
 ```
 
 Each `ExecutedAction` records original path, destination, backup path if any, size, hash, risk, and whether restore is possible.
+
+Supporting manifest types:
+
+```rust
+pub enum RestoreState {
+    NotNeeded,
+    Restorable,
+    PartiallyRestorable,
+    NotRestorable,
+}
+
+pub struct ExecutedAction {
+    pub source: PathBuf,
+    pub destination: Option<PathBuf>,
+    pub backup: Option<PathBuf>,
+    pub size_bytes: u64,
+    pub sha256: Option<String>,
+    pub risk: RiskLevel,
+    pub status: ExecutionStatus,
+    pub restore_possible: bool,
+}
+
+pub enum ExecutionStatus {
+    MovedToTrash,
+    Quarantined,
+    Skipped,
+    Failed,
+}
+```
 
 ## Stable IDs
 
@@ -133,4 +239,3 @@ IDs should be deterministic inside one scan when possible:
 | `ManifestId` | timestamp + plan id |
 
 IDs shown in tables can be shortened, but JSON must include full IDs.
-

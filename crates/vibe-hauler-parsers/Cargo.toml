@@ -12,7 +12,7 @@ rust-version.workspace = true
 [dependencies]
 anyhow.workspace = true
 vibe-hauler-core = { path = "../vibe-hauler-core" }
+vibe-hauler-redaction = { path = "../vibe-hauler-redaction" }
 
 [lints]
 workspace = true
-

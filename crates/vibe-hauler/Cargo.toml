@@ -21,9 +21,6 @@ vibe-hauler-cleaner = { path = "../vibe-hauler-cleaner" }
 vibe-hauler-config = { path = "../vibe-hauler-config" }
 vibe-hauler-core = { path = "../vibe-hauler-core" }
 vibe-hauler-discovery = { path = "../vibe-hauler-discovery" }
-vibe-hauler-parsers = { path = "../vibe-hauler-parsers" }
-vibe-hauler-redaction = { path = "../vibe-hauler-redaction" }
 
 [lints]
 workspace = true
-

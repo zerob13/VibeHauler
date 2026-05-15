@@ -34,9 +34,9 @@ Each archive should contain:
 vhaul or vhaul.exe
 README.md
 LICENSE
-completions/
-man/
 ```
+
+Shell completions and manpages are optional until the TUI stabilizes. Add them to archives only after generators exist in CI.
 
 ## Checksums and Provenance
 

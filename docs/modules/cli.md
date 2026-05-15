@@ -8,7 +8,7 @@ Binary: `vhaul`
 The CLI module owns the terminal application shell:
 
 - parse startup flags with `clap`;
-- launch the TUI;
+- launch the `ratatui` + `crossterm` TUI;
 - load config and root overrides;
 - call discovery/adapters/core/cleaner in the TUI workflow order;
 - render interactive lists, detail panels, confirmations, and summaries;
@@ -43,6 +43,7 @@ These flags prepare the TUI environment. They never execute cleanup on their own
 - Define `Cli` and startup flags.
 - Print help and version.
 - Launch a placeholder TUI shell for `vhaul`.
+- Add `ratatui` and `crossterm` when the first real screen is implemented.
 
 Acceptance:
 

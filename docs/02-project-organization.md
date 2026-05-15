@@ -23,7 +23,6 @@ vibe-hauler/
 │   └── vibe-hauler-fixtures/     # test fixture builders, publish=false
 ├── fixtures/
 ├── tests/
-├── xtask/
 ├── packaging/
 │   ├── homebrew/
 │   └── npm/
@@ -70,7 +69,7 @@ Recommended flags:
 | `sqlite` | yes | SQLite readonly/introspection |
 | `leveldb` | yes | LevelDB/localStorage parsing |
 | `indexeddb-subset` | yes | bounded IndexedDB/V8 subset scanner |
-| `tui` | yes | interactive terminal interface |
+| `tui` | yes | interactive terminal interface with `ratatui` + `crossterm` |
 | `vendored-sqlite` | yes for release | predictable cross-platform builds |
 | `native-tls` | no | should not be needed for local-first v0.1 |
 
@@ -86,3 +85,5 @@ cargo run -p vibe-hauler --
 ```
 
 Release commands should live in `xtask` or CI, not in ad hoc shell snippets.
+
+`xtask/` is not required in the scaffold. Add it only when release automation grows beyond CI scripts.

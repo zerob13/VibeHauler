@@ -6,7 +6,7 @@ VibeHauler is organized around module contracts. Each module should be small eno
 
 ```mermaid
 flowchart LR
-  CLI["CLI"] --> Config["Config"]
+  CLI["CLI/TUI"] --> Config["Config"]
   CLI --> Core["Core"]
   CLI --> Discovery["Discovery"]
   CLI --> Adapters["Adapters"]
@@ -26,7 +26,7 @@ flowchart LR
 
 | Module | Doc | Primary Job |
 |---|---|---|
-| CLI | [cli.md](./cli.md) | command UX, output, confirmations |
+| CLI | [cli.md](./cli.md) | TUI shell, output, confirmations |
 | Core | [core.md](./core.md) | shared models, risk engine, plan builder |
 | Discovery | [discovery.md](./discovery.md) | cross-platform roots and app instances |
 | Adapters | [adapters.md](./adapters.md) | app-specific inventory/session extraction |
@@ -40,13 +40,13 @@ flowchart LR
 
 1. Core data model and risk levels.
 2. Config and path discovery.
-3. CLI command skeleton.
+3. TUI startup shell.
 4. Adapter registry with empty adapters.
 5. JSONL/Markdown parsers for Claude, Codex, Gemini, Aider.
-6. Scan inventory and risk report.
-7. Plan builder.
-8. Cleaner dry-run, backup, trash, manifest, restore.
-9. SQLite/LevelDB protective reads for desktop clients.
+6. App selection and safe cleanup screens.
+7. Plan builder and manifest contracts.
+8. Cleaner backup, trash, manifest, and TUI restore guidance.
+9. SQLite protective reports for v0.2 desktop clients.
 10. Release packaging.
 
-The first implementation milestone should be intentionally boring: parse flags, discover fixture roots, and print deterministic reports.
+The first implementation milestone should be intentionally boring: parse startup flags, discover fixture roots, and render deterministic TUI screens.

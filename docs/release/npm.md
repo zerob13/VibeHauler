@@ -39,6 +39,8 @@ Public packages:
 
 The wrapper uses `optionalDependencies` to install the right native package.
 
+Optional release targets such as `aarch64-unknown-linux-gnu` and `aarch64-pc-windows-msvc` should only get npm packages after CI produces and smoke-tests those binaries.
+
 ## Wrapper `package.json`
 
 ```json

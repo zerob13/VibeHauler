@@ -25,7 +25,14 @@ pub trait AppAdapter: Send + Sync {
     fn sessions(&self, instance: &AppInstance) -> anyhow::Result<Vec<AgentSession>>;
     fn clean_rules(&self) -> Vec<CleanRule>;
 }
+
+pub struct CleanRule {
+    pub name: String,
+    pub description: String,
+}
 ```
+
+The v0.1 API returns vectors for simplicity. If a fixture shows large-session performance problems, introduce a paged `SessionQuery`/`SessionPage` API before implementing the affected adapter.
 
 ## Registry
 
@@ -47,8 +54,8 @@ pub struct AdapterRegistry {
 | Tier | Meaning | v0.1 Requirement |
 |---|---|---|
 | Full | detection, inventory, sessions, Green cleanup | Claude, Codex, Gemini, Aider |
-| Protective | detection, inventory, partial sessions/report, Green-only cleanup | Cursor, Cherry, DeepChat, Alma, Goose |
-| Sniffer | detection and generic file/session hints | OpenCode, Factory Droid, Copilot CLI |
+| Protective | detection, inventory, partial sessions/report, Green-only cleanup | not in v0.1; starts with Cursor/Goose in v0.2 |
+| Sniffer | detection and generic file/session hints | not in v0.1; starts with OpenCode in v0.2 |
 
 ## Per-adapter Files
 
@@ -62,15 +69,15 @@ crates/vibe-hauler-adapters/src/
 ├── codex.rs
 ├── gemini.rs
 ├── aider.rs
-├── opencode.rs
-├── cursor.rs
+├── opencode.rs          # v0.2
+├── cursor.rs            # v0.2
 ├── cherry/
 │   ├── mod.rs
 │   ├── backup_json.rs
 │   ├── local_storage.rs
 │   └── indexeddb.rs
 ├── deepchat.rs
-├── goose.rs
+├── goose.rs             # v0.2
 ├── alma.rs
 └── factory_droid.rs
 ```
@@ -84,4 +91,3 @@ Each adapter needs:
 - session snapshot if supported;
 - Red/Green protection test for credentials/config/cache;
 - locked DB behavior where applicable.
-

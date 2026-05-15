@@ -1,5 +1,8 @@
 # Historical Plan: Vibe Cleaner / vclean
 
+> Deprecated historical reference. Do not treat this file as an implementation contract.
+> Current contracts live in [VibeHauler Documentation](./README.md), especially the product spec, CLI spec, data model, and module docs.
+
 > This document is historical reference. The current product name is **VibeHauler**, the CLI binary is **`vhaul`**, and the Rust package/repo name is **`vibe-hauler`**.
 >
 > Start from [VibeHauler Documentation](./README.md) for the current module docs, architecture, CLI spec, and release plan.

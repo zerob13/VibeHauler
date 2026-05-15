@@ -66,6 +66,34 @@ Before TUI execution:
 6. Refuse path traversal and symlink escapes.
 7. Ask for typed confirmation.
 
+## Mechanism Notes
+
+Process guards:
+
+- v0.1 only needs guards for apps whose files are selected for mutation.
+- On Unix-like systems, inspect process names and open file handles when available; if that fails, rely on lock/open checks and show a warning.
+- On Windows, use process-name guards first and treat locked files as Black.
+- A guard failure blocks Yellow session cleanup and skips affected Green items.
+
+Symlink escape detection:
+
+- Canonicalize the discovered root and every selected source path immediately before execution.
+- Refuse any selected source whose canonical path is outside its owning app root.
+- Do not follow symlinks while enumerating cleanup candidates unless explicitly enabled in config.
+- Re-check parent directories before backup and before move-to-trash.
+
+Core database policy:
+
+- v0.1 does not mutate SQLite, LevelDB, IndexedDB, DuckDB, vector stores, or opaque app databases.
+- Desktop-client databases are Red or Black unless a future adapter proves a table-level operation is reversible and covered by fixtures.
+- SQLite actions in v0.1 are report-only.
+
+Backup space check:
+
+- Estimate required backup bytes from selected Yellow actions plus manifest overhead.
+- Check available bytes in the configured VibeHauler data directory before starting backup.
+- If free space is unknown or insufficient, block Yellow cleanup and let Green cleanup continue only when it does not require backup.
+
 ## Restore Rules
 
 Restore should:

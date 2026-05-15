@@ -4,20 +4,20 @@ Adapters are the app-specific layer. Their job is to turn local client data into
 
 ## Support Matrix
 
-| App | v0.1 Tier | Root Discovery | Session Source | Cleanup Scope |
-|---|---|---|---|---|
-| Claude Code | Full | `CLAUDE_CONFIG_DIR`, `~/.claude` | `projects/**/*.jsonl` | logs/cache/tmp; sessions only by selection |
-| Codex | Full | `CODEX_HOME`, `~/.codex` | `history.jsonl`, `sessions/**` | logs/cache/tmp; sessions only by selection |
-| Gemini CLI | Full | `~/.gemini` | `tmp/*/chats/**` | logs/cache/tmp; chats only by selection |
-| Aider | Full | repo-local | `.aider.chat.history.md` | history only by selection |
-| OpenCode | Sniffer | XDG config/data/cache | JSON/JSONL/SQLite sniff | logs/cache/tmp |
-| Cursor | Protective | VS Code-like user data | `state.vscdb` key families | cache/log only |
-| Cherry Studio | Protective | Electron userData | backup JSON, localStorage, IndexedDB scan | trace/cache/log only |
-| DeepChat | Protective | Electron userData | SQLite schema report | cache/log only |
-| Goose | Protective | data/config dirs | `sessions.db` report | logs only |
-| Alma | Protective | Electron userData | `chat_threads.db` report | none by default |
-| Factory Droid | Sniffer | `~/.factory`, repo `.factory` | file fingerprinting | logs/tmp only |
-| Copilot CLI | Sniffer | `~/.copilot` | logs/cache initially | logs/cache |
+| App | Stage | Tier | Root Discovery | Session Source | Cleanup Scope |
+|---|---|---|---|---|---|
+| Claude Code | v0.1 | Full | `CLAUDE_CONFIG_DIR`, `~/.claude` | `projects/**/*.jsonl` | logs/cache/tmp; sessions only by selection |
+| Codex | v0.1 | Full | `CODEX_HOME`, `~/.codex` | `history.jsonl`, `sessions/**` | logs/cache/tmp; sessions only by selection |
+| Gemini CLI | v0.1 | Full | `~/.gemini` | `tmp/*/chats/**` | logs/cache/tmp; chats only by selection |
+| Aider | v0.1 | Full | repo-local | `.aider.chat.history.md` | history only by selection |
+| OpenCode | v0.2 | Sniffer | XDG config/data/cache | JSON/JSONL sniff | logs/cache/tmp |
+| Cursor | v0.2 | Protective | VS Code-like user data | `state.vscdb` key families | cache/log only |
+| Goose | v0.2 | Protective | data/config dirs | `sessions.db` report | logs only |
+| Cherry Studio | v0.3 | Protective | Electron userData | backup JSON, localStorage report | trace/cache/log only |
+| DeepChat | v0.3 | Protective | Electron userData | SQLite schema report | cache/log only |
+| Alma | v0.3 | Protective | Electron userData | `chat_threads.db` report | none by default |
+| Factory Droid | later | Sniffer | `~/.factory`, repo `.factory` | file fingerprinting | logs/tmp only |
+| Copilot CLI | later | Sniffer | `~/.copilot` | logs/cache initially | logs/cache |
 
 ## Shared Adapter Rules
 
@@ -130,7 +130,7 @@ Inventory:
 | Cache/logs/GPUCache | Green | safe cleanup |
 | settings/keybindings/extensions state | Red | protect |
 
-v0.1 should not compact or replace Cursor DBs. It may generate an advanced plan.
+Cursor is not part of v0.1. When added, it must not compact or replace Cursor DBs. It may generate a readonly report.
 
 ## Cherry Studio
 
@@ -153,15 +153,15 @@ Inventory:
 |---|---|---|
 | trace/cache/log | Green | safe cleanup |
 | `Local Storage/leveldb` | Red/Black | readonly parse/report |
-| `IndexedDB/*.leveldb` | Red/Black | readonly scan/report |
+| `IndexedDB/*.leveldb` | Red/Black | readonly report only |
 | `Data/agents.db` | Red | SQLite report |
 | user backup JSON | Yellow | session browser input |
 
 Parser priority:
 
 1. user-provided backup JSON;
-2. localStorage LevelDB metadata;
-3. IndexedDB raw scanner;
+2. localStorage LevelDB metadata report;
+3. IndexedDB candidate report;
 4. SQLite introspection.
 
 ## DeepChat
@@ -233,8 +233,8 @@ Inventory:
 3. Gemini.
 4. Aider.
 5. OpenCode sniffer.
-6. Cursor protective scan.
-7. Cherry protective scan plus backup JSON parser.
-8. DeepChat/Goose/Alma SQLite reports.
-9. Droid/Copilot sniffers.
-
+6. Cursor protective report.
+7. Goose SQLite report.
+8. Cherry protective report plus backup JSON parser.
+9. DeepChat/Alma SQLite reports.
+10. Droid/Copilot sniffers.

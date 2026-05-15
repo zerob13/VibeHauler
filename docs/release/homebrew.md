@@ -33,6 +33,8 @@ Formula file:
 Formula/vibe-hauler.rb
 ```
 
+The repo carries a starter formula at `packaging/homebrew/Formula/vibe-hauler.rb`. Treat it as a template until release automation replaces the tag and sha256.
+
 Formula class:
 
 ```ruby

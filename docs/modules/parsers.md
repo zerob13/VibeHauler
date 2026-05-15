@@ -10,16 +10,27 @@ Parsers understand file and database formats. They should be reusable across ada
 
 | Parser | Targets |
 |---|---|
-| JSONL session parser | Claude, Codex, Gemini, OpenCode |
+| JSONL session parser | Claude, Codex, Gemini |
 | Markdown history parser | Aider |
-| SQLite introspector | Cursor, DeepChat, Alma, Goose, Cherry v2 |
-| Chromium localStorage LevelDB parser | Cherry, Electron apps |
-| IndexedDB raw scanner | Cherry Dexie stores |
-| Generic file sniffer | Droid, OpenCode, unknown agents |
+| SQLite introspector | v0.2+ protective reports for Cursor, Goose, DeepChat, Alma |
+| Chromium localStorage LevelDB parser | v0.3+ protective reports for Cherry and Electron apps |
+| IndexedDB candidate scanner | v0.3+ report-only research path for Cherry Dexie stores |
+| Generic file sniffer | v0.2+ OpenCode and later unknown agents |
 
 ## Trait
 
 ```rust
+pub struct ParserInput {
+    pub path: PathBuf,
+    pub app_hint: Option<String>,
+}
+
+pub enum ParserSupport {
+    Unsupported,
+    Maybe,
+    Supported,
+}
+
 pub trait SessionParser: Send + Sync {
     fn name(&self) -> &'static str;
     fn supports(&self, input: &ParserInput) -> ParserSupport;
@@ -48,6 +59,8 @@ Requirements:
 
 ## SQLite Introspector
 
+Stage: v0.2 and later. Not required for v0.1.
+
 Requirements:
 
 - open read-only;
@@ -58,6 +71,8 @@ Requirements:
 
 ## LevelDB Parser
 
+Stage: v0.3 and later. Not required for v0.1.
+
 Requirements:
 
 - open read-only;
@@ -66,6 +81,8 @@ Requirements:
 - if locked, return Black evidence instead of retrying destructively.
 
 ## IndexedDB Scanner
+
+Stage: v0.3 and later. This is report-only until fixture coverage proves the parser stable.
 
 Requirements:
 
@@ -81,4 +98,3 @@ Requirements:
 - Malformed input tests.
 - Large-file streaming test for JSONL.
 - Locked DB behavior for SQLite/LevelDB.
-

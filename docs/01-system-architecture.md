@@ -87,9 +87,9 @@ Runtime parsing priority:
 ```txt
 Local filesystem
   -> JSON / JSONL / Markdown / TOML / YAML
-  -> SQLite readonly + schema introspection
-  -> LevelDB readonly + Chromium localStorage decoding
-  -> IndexedDB raw scanner + bounded V8 subset deserializer
+  -> SQLite readonly + schema introspection (v0.2+)
+  -> LevelDB readonly + Chromium localStorage decoding (v0.3+)
+  -> IndexedDB candidate scanner, report-only until proven by fixtures (v0.3+)
   -> Electron userData inventory
   -> VS Code/Cursor state.vscdb key-value parser
   -> user-provided backup/export JSON

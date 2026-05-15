@@ -1,0 +1,13 @@
+{
+  "name": "@vibehauler/vhaul-linux-x64",
+  "version": "0.1.0",
+  "description": "VibeHauler native binary for Linux x64",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zerob13/VibeHauler.git"
+  },
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "files": ["bin/vhaul"]
+}

@@ -61,13 +61,16 @@ MVP adapters:
 | Codex | yes | yes | JSONL/history | logs/cache/tmp |
 | Gemini CLI | yes | yes | JSON/JSONL | logs/cache/tmp |
 | Aider | repo discovery | yes | Markdown/history | selected history only |
-| OpenCode | yes | yes | sniffed JSON/JSONL | logs/cache/tmp |
-| Cursor | yes | yes | key-family preview | cache/log only |
-| Cherry Studio | yes | yes | backup/partial | trace/cache/log only |
-| DeepChat | yes | yes | SQLite report | cache/log only |
-| Alma | yes | yes | SQLite report | none by default |
-| Goose | yes | yes | SQLite report | logs only |
-| Factory Droid | yes | yes | file sniffing | logs/tmp only |
+
+Non-MVP app IDs may exist in code and docs, but v0.1 should not promise their cleanup behavior.
+
+Post-MVP adapter order:
+
+| Stage | Clients | Scope |
+|---|---|---|
+| v0.2 | OpenCode, Cursor, Goose | detection, safe logs/cache, readonly reports |
+| v0.3 | Cherry Studio, DeepChat, Alma | backup import, SQLite reports, protective desktop-client review |
+| later | Factory Droid, Copilot CLI | file sniffing and safe logs/cache only after fixtures exist |
 
 ## Risk Language
 
@@ -84,14 +87,15 @@ MVP adapters:
 - No GUI yet.
 - No cloud sync.
 - No permanent delete by default.
-- No automatic SQLite replacement for Cursor/Cherry/DeepChat/Alma; advanced plans can be generated, but execution comes later.
-- No unsupported destructive edits to opaque LevelDB/IndexedDB stores.
+- No SQLite cleanup or compaction in v0.1.
+- No LevelDB or IndexedDB parsing in v0.1.
+- No unsupported destructive edits to opaque databases or binary stores.
 
 ## Release Stages
 
 | Version | Theme | Deliverable |
 |---|---|---|
 | v0.1 | TUI safe cleaner | one-command TUI, app selection, Green cleanup, session review, manifests |
-| v0.2 | Parser depth | Goose, DeepChat, Cursor, Cherry parser improvements |
-| v0.3 | Session control | richer previews, export/archive, restore browser |
+| v0.2 | Protective reports | OpenCode, Cursor, Goose, SQLite readonly reports |
+| v0.3 | Desktop parser depth | Cherry, DeepChat, Alma, richer previews, restore browser |
 | v1.0 | Agent data control center | export, archive, privacy report, richer adapter registry |

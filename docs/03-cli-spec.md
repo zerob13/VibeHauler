@@ -40,6 +40,8 @@ Startup flags configure the TUI before it opens. They do not execute cleanup by 
 
 The full screen flow is specified in [Interactive Cleanup Flow](./06-interactive-cleanup-flow.md).
 
+Implementation decision: use `ratatui` for layout/rendering and `crossterm` for terminal input/output.
+
 ## Startup Example
 
 ```txt

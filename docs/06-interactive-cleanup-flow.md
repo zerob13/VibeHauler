@@ -405,7 +405,7 @@ Partial failure behavior:
 |   ~/.local/share/vibe-hauler/manifests/20260515-231722.json     |
 |                                                                 |
 | Restore                                                         |
-|   vhaul restore ~/.local/share/vibe-hauler/manifests/...json    |
+|   Available from the TUI home screen with this manifest          |
 +-----------------------------------------------------------------+
 ```
 
@@ -482,7 +482,7 @@ discover app roots
   -> generate selected cleanup actions
   -> execute confirmed actions
   -> write manifest
-  -> show restore guidance
+  -> show restore guidance inside the TUI
 ```
 
 The TUI may keep draft selections in memory during the session, but persisted manifests must use the shared `CleanManifest` schema.

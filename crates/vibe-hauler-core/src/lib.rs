@@ -8,5 +8,8 @@ pub use models::{
     AgentSession, AppId, AppInstance, DetectionConfidence, InventoryItem, ItemKind, OsKind,
     RootKind, SessionSource, TokenUsage,
 };
-pub use plan::{CleanManifest, CleanPlan, ExecutedAction, PlannedAction};
+pub use plan::{
+    ActionKind, CleanManifest, CleanPlan, ExecutedAction, ExecutionStatus, PlanMode, PlanTotals,
+    PlanWarning, PlannedAction, RestoreState,
+};
 pub use risk::{Recommendation, RiskLevel};

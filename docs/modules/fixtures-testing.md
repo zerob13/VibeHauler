@@ -60,10 +60,17 @@ fixtures/
 | Codex | history and sessions path parse |
 | Gemini | tmp chats parse |
 | Aider | Markdown segmentation |
-| Cursor | state.vscdb readonly schema report |
-| Cherry | LocalStorage UTF-16/NUL sample and backup JSON |
-| Cleaner | dry-run no mutation, backup hash, restore |
+| Cleaner | no mutation before confirmation, backup hash, manifest |
 | Redaction | API keys, bearer tokens, URL credentials |
+
+Post-v0.1 fixture areas:
+
+| Area | First Stage |
+|---|---|
+| Cursor state.vscdb readonly schema report | v0.2 |
+| Goose sessions.db readonly report | v0.2 |
+| Cherry LocalStorage/backup JSON samples | v0.3 |
+| DeepChat/Alma SQLite schema reports | v0.3 |
 
 ## Golden Files
 
